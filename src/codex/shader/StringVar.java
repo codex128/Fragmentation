@@ -10,6 +10,9 @@ package codex.shader;
  */
 public class StringVar extends GlslVar {
     
+    protected StringVar() {
+        super();
+    }
     public StringVar(String function, String name, String type, String def) {
         super(function, name, type, def);
     }    

@@ -4,13 +4,21 @@
  */
 package codex.shader;
 
+import codex.shader.gui.LineGeometry;
+import com.jme3.material.Material;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.control.AbstractControl;
+
 /**
  *
  * @author codex
  */
-public class Connection {
+public class Connection extends AbstractControl {
     
     private final Socket out, in;
+    private LineGeometry line;
     
     public Connection(Socket s1, Socket s2) {
         validate(s1, s2);
@@ -24,11 +32,20 @@ public class Connection {
         }
     }
     
+    public LineGeometry createLineGeometry(Material mat) {
+        LineGeometry g = new LineGeometry("connection-line");
+        g.setMaterial(mat);
+        g.addControl(this);
+        return g;
+    }    
     public Socket getOutputSocket() {
         return out;
     }
     public Socket getInputSocket() {
         return in;
+    }
+    public LineGeometry getLineGeometry() {
+        return line;
     }
     
     private static void validate(Socket s1, Socket s2) {
@@ -37,6 +54,26 @@ public class Connection {
         }
         if (!s1.getVariable().getType().equals(s2.getVariable().getType())) {
             throw new IllegalStateException("Both socket's variable types must match!");
+        }
+    }
+
+    @Override
+    protected void controlUpdate(float tpf) {
+        line.setPoints(out.getWorldTranslation(), in.getWorldTranslation());
+    }
+    @Override
+    protected void controlRender(RenderManager rm, ViewPort vp) {}
+    @Override
+    public void setSpatial(Spatial spat) {
+        super.setSpatial(spat);
+        if (spatial != null) {
+            if (!(spatial instanceof LineGeometry)) {
+                throw new IllegalArgumentException("Requires LineGeometry!");
+            }
+            line = (LineGeometry)spatial;
+        }
+        else {
+            line = null;
         }
     }
     

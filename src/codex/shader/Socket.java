@@ -4,13 +4,14 @@
  */
 package codex.shader;
 
+import com.jme3.scene.Node;
 import java.util.ArrayList;
 
 /**
  *
  * @author codex
  */
-public abstract class Socket {
+public abstract class Socket extends Node {
     
     public enum IO {
         Input, Output;

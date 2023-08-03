@@ -124,7 +124,7 @@ public class Compiler implements Runnable {
                 stack.removeLast();
             }
         }
-    }    
+    }
     private String generateNextName() {
         if (nextNameIndex >= letters.length) {
             throw new IndexOutOfBoundsException("Compiler ran out of unique variable names!");
@@ -168,6 +168,9 @@ public class Compiler implements Runnable {
                 v.setCompilerSource(null);
             }
         }
+    }
+    private void export() {
+        // export compiled code
     }
     
 }

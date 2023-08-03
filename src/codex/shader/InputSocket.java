@@ -4,6 +4,8 @@
  */
 package codex.shader;
 
+import codex.shader.gui.Argument;
+
 /**
  *
  * @author codex
@@ -16,7 +18,7 @@ public class InputSocket extends Socket {
         super(module, var, Socket.IO.Input);
         validate(var);
         if (var.getDefault() != null) {
-            argument = new Argument(this);
+            argument = Argument.create(this);
         }
     }
     

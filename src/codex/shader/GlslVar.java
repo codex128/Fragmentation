@@ -25,10 +25,11 @@ public class GlslVar {
         
     }
     
-    protected String function, name, type, def;
+    protected String function, name, type, def, defProp;
     private String compilerName;
     private GlslVar source;
     
+    protected GlslVar() {}
     public GlslVar(String function, String name, String type, String def) {
         this.function = function;
         this.name = name;
@@ -92,6 +93,11 @@ public class GlslVar {
         return type+" "+compilerName+" = "+(source != null ? source.getCompilerName() : def);
     }
     
+    public void setDefault(String def) {
+        assert def != null;
+        this.def = def;
+    }
+    
     public String getFunction() {
         return function;
     }
@@ -103,6 +109,9 @@ public class GlslVar {
     }
     public String getDefault() {
         return def;
+    }
+    public String getDefaultProperties() {
+        return defProp;
     }
     public String getCompilerName() {
         return compilerName;
@@ -123,7 +132,7 @@ public class GlslVar {
     
     public static GlslVar parse(String source) throws SyntaxException {
         String[] args = source.split(" ", 4);
-        String function = null, type = null, name = null, def = null;
+        String function, type = null, name = null, def = null, defProp = null;
         function = args[0];
         switch (function) {
             case INPUT -> {
@@ -131,7 +140,14 @@ public class GlslVar {
                 type = args[1];
                 name = args[2];
                 if (args.length > 3) {
-                    def = args[3];
+                    var defInit = args[3].split("&", 2);
+                    def = defInit[0].trim();
+                    if (defInit.length > 1) {
+                        defProp = defInit[1].trim();
+                        if (defProp.isBlank()) {
+                            defProp = null;
+                        }
+                    }
                 }
             }
             case LOCAL -> {
@@ -148,12 +164,19 @@ public class GlslVar {
         if (!Character.isLetter(name.charAt(0))) {
             throw new SyntaxException("Variable name cannot begin with '"+name.charAt(0)+"'!");
         }
+        GlslVar var;
         if ("String".equals(type)) {
-            return new StringVar(function, type, name, def);
+            var = new StringVar();
         }
         else {
-            return new GlslVar(function, type, name, def);
+            var = new GlslVar();
         }
+        var.function = function;
+        var.type = type;
+        var.name = name;
+        var.def = def;
+        var.defProp = defProp;
+        return var;
     }
     private static void validate(String[] args, int length) throws SyntaxException {
         if (args.length < length) {

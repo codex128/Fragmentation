@@ -4,13 +4,14 @@
  */
 package codex.shader;
 
+import com.simsilica.lemur.Container;
 import java.util.ArrayList;
 
 /**
  *
  * @author codex
  */
-public class Module {
+public class Module extends Container {
     
     private GLSL glsl;
     private ArrayList<InputSocket> inputs = new ArrayList<>();
