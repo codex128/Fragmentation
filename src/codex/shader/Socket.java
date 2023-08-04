@@ -4,6 +4,7 @@
  */
 package codex.shader;
 
+import codex.shader.gui.SocketHub;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.simsilica.lemur.Container;
@@ -29,7 +30,7 @@ public abstract class Socket extends Container {
     protected final IO type;
     protected final ArrayList<Connection> connections = new ArrayList<>();
     protected SpringGridLayout layout;
-    protected Label hub;
+    protected SocketHub hub;
     
     public Socket(Module module, GlslVar variable, IO type) {
         super("");
@@ -43,12 +44,10 @@ public abstract class Socket extends Container {
         layout = new SpringGridLayout();
         setLayout(layout);
         layout.addChild(0, 0, new Label(variable.getName()));
-        hub = new Label("");
-        var icon = new IconComponent("Textures/socket.png");
-        icon.setColor(ColorRGBA.Red);
-        hub.setIcon(icon);
+        hub = new SocketHub(this, "Textures/socket.png");
+        hub.getIcon().setColor(ColorRGBA.Red);
         attachChild(hub);
-        hub.addControl(new MouseEventControl(module.getProgram().getConnectorMouse()));
+        hub.addControl(new MouseEventControl(module.getProgram().getSocketConnector()));
     }
     
     public Vector3f getConnectionLocation() {
@@ -87,5 +86,14 @@ public abstract class Socket extends Container {
     public IO getType() {
         return type;
     }
+    public ArrayList<Connection> getConnectionList() {
+        return connections;
+    }
+    public int getNumConnections() {
+        return connections.size();
+    }
+    public SocketHub getHub() {
+        return hub;
+    }    
     
 }

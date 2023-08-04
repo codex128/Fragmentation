@@ -27,5 +27,9 @@ public class SocketHub extends Label {
     public Socket getSocket() {
         return socket;
     }
+    @Override
+    public IconComponent getIcon() {
+        return icon;
+    }
     
 }
