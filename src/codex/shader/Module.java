@@ -4,7 +4,10 @@
  */
 package codex.shader;
 
+import com.simsilica.lemur.Axis;
 import com.simsilica.lemur.Container;
+import com.simsilica.lemur.FillMode;
+import com.simsilica.lemur.component.BoxLayout;
 import java.util.ArrayList;
 
 /**
@@ -13,11 +16,13 @@ import java.util.ArrayList;
  */
 public class Module extends Container {
     
-    private GLSL glsl;
+    private final Program program;
+    private final GLSL glsl;
     private ArrayList<InputSocket> inputs = new ArrayList<>();
     private ArrayList<OutputSocket> outputs = new ArrayList<>();
     
-    public Module(GLSL glsl) {
+    public Module(Program program, GLSL glsl) {
+        this.program = program;
         this.glsl = glsl;
         createSockets();
     }
@@ -25,8 +30,25 @@ public class Module extends Container {
     private void createSockets() {
         glsl.getInputVariables().forEach(v -> inputs.add(new InputSocket(this, v)));
         glsl.getOutputVariables().forEach(v -> outputs.add(new OutputSocket(this, v)));
+        var layout = new BoxLayout(Axis.Y, FillMode.Even);
+        setLayout(layout);
+        for (var s : outputs) {
+            addChild(s);
+        }
+        for (var s : inputs) {
+            addChild(s);
+        }
     }
     
+    public void terminate() {
+        inputs.stream().forEach(s -> s.terminate());
+        outputs.stream().forEach(s -> s.terminate());
+        removeFromParent();
+    }
+    
+    public Program getProgram() {
+        return program;
+    }
     public GLSL getGlsl() {
         return glsl;
     }

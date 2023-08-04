@@ -4,14 +4,21 @@
  */
 package codex.shader;
 
-import com.jme3.scene.Node;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.simsilica.lemur.Container;
+import com.simsilica.lemur.Label;
+import com.simsilica.lemur.component.IconComponent;
+import com.simsilica.lemur.component.SpringGridLayout;
+import com.simsilica.lemur.event.MouseEventControl;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
  * @author codex
  */
-public abstract class Socket extends Node {
+public abstract class Socket extends Container {
     
     public enum IO {
         Input, Output;
@@ -21,21 +28,54 @@ public abstract class Socket extends Node {
     protected final GlslVar variable;
     protected final IO type;
     protected final ArrayList<Connection> connections = new ArrayList<>();
+    protected SpringGridLayout layout;
+    protected Label hub;
     
     public Socket(Module module, GlslVar variable, IO type) {
+        super("");
         this.module = module;
         this.variable = variable;
         this.type = type;
+        initGui();
     }
     
+    private void initGui() {
+        layout = new SpringGridLayout();
+        setLayout(layout);
+        layout.addChild(0, 0, new Label(variable.getName()));
+        hub = new Label("");
+        var icon = new IconComponent("Textures/socket.png");
+        icon.setColor(ColorRGBA.Red);
+        hub.setIcon(icon);
+        attachChild(hub);
+        hub.addControl(new MouseEventControl(module.getProgram().getConnectorMouse()));
+    }
+    
+    public Vector3f getConnectionLocation() {
+        return hub.getWorldTranslation();
+    }
     public boolean acceptConnectionTo(Socket socket) {
-        return variable.getType().equals(socket.getVariable().getType()) && type != socket.getType();
+        return variable.getType().equals(socket.getVariable().getType())
+                && type != socket.getType()
+                && module != socket.getModule();
     }
     public Connection connect(Socket socket) {
         var connection = new Connection(this, socket);
         connections.add(connection);
         socket.connections.add(connection);
         return connection;
+    }
+    public void removeConnection(Connection connect) {
+        connections.remove(connect);
+    }
+    
+    public void terminate() {
+        var list = new LinkedList<Connection>(connections);
+        connections.clear();
+        for (var c : list) {
+            c.terminate();
+        }
+        list.clear();
     }
     
     public Module getModule() {

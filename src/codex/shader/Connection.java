@@ -17,7 +17,7 @@ import com.jme3.scene.control.AbstractControl;
  */
 public class Connection extends AbstractControl {
     
-    private final Socket out, in;
+    private Socket out, in;
     private LineGeometry line;
     
     public Connection(Socket s1, Socket s2) {
@@ -37,15 +37,21 @@ public class Connection extends AbstractControl {
         g.setMaterial(mat);
         g.addControl(this);
         return g;
-    }    
+    }
+    public LineGeometry getLineGeometry() {
+        return line;
+    }
+    
     public Socket getOutputSocket() {
         return out;
     }
     public Socket getInputSocket() {
         return in;
     }
-    public LineGeometry getLineGeometry() {
-        return line;
+    public Socket getOppositeSocket(Socket socket) {
+        if (socket == out) return in;
+        else if (socket == in) return out;
+        else return null;
     }
     
     private static void validate(Socket s1, Socket s2) {
@@ -59,7 +65,7 @@ public class Connection extends AbstractControl {
 
     @Override
     protected void controlUpdate(float tpf) {
-        line.setPoints(out.getWorldTranslation(), in.getWorldTranslation());
+        line.setPoints(out.getConnectionLocation(), in.getConnectionLocation());
     }
     @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {}
@@ -75,6 +81,14 @@ public class Connection extends AbstractControl {
         else {
             line = null;
         }
+    }
+    
+    public void terminate() {
+        out.removeConnection(this);
+        in.removeConnection(this);
+        out = in = null;
+        spatial.removeFromParent();
+        spatial.removeControl(this);
     }
     
 }

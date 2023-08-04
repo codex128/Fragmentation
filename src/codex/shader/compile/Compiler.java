@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package codex.shader;
+package codex.shader.compile;
 
+import codex.shader.Module;
+import codex.shader.Program;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,6 +28,7 @@ public class Compiler implements Runnable {
     private Module currentModule;
     private int substep = 0;
     private int nextNameIndex = 0;
+    private CompilingError error;
     
     public Compiler(Program program) {
         this.program = program;
@@ -35,17 +38,17 @@ public class Compiler implements Runnable {
     public void run() {
         initialize();
         while (true) {
-            try {
-                // is this sleep even necessary?
-                Thread.sleep(1);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, "An exception occured while compiling:", ex);
-            }
-            if (compile()) {
+            if (error != null || compile()) {
                 break;
             }
         }
         cleanupModules();
+        if (error != null) {
+            export();
+        }
+        else {
+            System.err.println("Compiler Error: "+error.getErrorMessage());
+        }
     }
     
     private void initialize() {
@@ -99,7 +102,14 @@ public class Compiler implements Runnable {
                 }
                 // check if this input socket is connected to anything
                 if (socket.getConnection() == null) {
-                    continue;
+                    if (socket.getArgument() != null) {
+                        socket.getVariable().setDefault(socket.getArgument().getValue());
+                    }
+                    else {
+                        // compiling must be stopped because a required socket was not connected to anything
+                        error = new UnconnectedSocketError(socket);
+                        return;
+                    }
                 }
                 // since the input variable is connected to an output variable, set the output as the input's source
                 if (socket.getVariable().getCompilerSource() == null) {

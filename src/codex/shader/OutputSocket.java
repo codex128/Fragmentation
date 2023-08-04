@@ -13,6 +13,11 @@ public class OutputSocket extends Socket {
     public OutputSocket(Module module, GlslVar variable) {
         super(module, variable, Socket.IO.Output);
         validate(variable);
+        initGui();
+    }
+    
+    private void initGui() {
+        hub.setLocalTranslation(50f, 0f, 0f);
     }
     
     private static void validate(GlslVar var) {

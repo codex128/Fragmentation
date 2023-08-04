@@ -20,6 +20,11 @@ public class InputSocket extends Socket {
         if (var.getDefault() != null) {
             argument = Argument.create(this);
         }
+        initGui();
+    }    
+    
+    private void initGui() {
+        layout.addChild(0, 1, argument);
     }
     
     @Override
@@ -28,6 +33,9 @@ public class InputSocket extends Socket {
     }
     public Connection getConnection() {
         return !connections.isEmpty() ? connections.get(0) : null;
+    }
+    public Argument getArgument() {
+        return argument;
     }
     
     public static InputSocket create(Module module, GlslVar var) {

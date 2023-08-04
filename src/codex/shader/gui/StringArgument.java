@@ -5,20 +5,33 @@
 package codex.shader.gui;
 
 import codex.shader.InputSocket;
+import com.simsilica.lemur.TextField;
 
 /**
  *
  * @author codex
  */
 public class StringArgument extends Argument {
-
+    
+    private TextField field;
+    
     public StringArgument(InputSocket socket) {
         super(socket);
+        initGui();
+    }
+    
+    private void initGui() {
+        field = new TextField("");
+        addChild(field);
     }
 
     @Override
-    public void displayValue(String value) {}
+    public void displayValue(String value) {
+        field.setText(value);
+    }
     @Override
-    public String getValue() {}
+    public String getValue() {
+        return field.getText();
+    }
     
 }

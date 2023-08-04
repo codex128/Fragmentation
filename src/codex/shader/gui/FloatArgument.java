@@ -22,7 +22,7 @@ public class FloatArgument extends Argument {
     
     private void initGui() {
         field = new TextField(new NumberDocumentModel());
-        attachChild(field);
+        addChild(field);
     }
     
     @Override
