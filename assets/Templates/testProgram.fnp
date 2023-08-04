@@ -1,0 +1,4 @@
+nextId=2
+module{id=0;glsl=Shaders/ColorOutput.sn;position=0,0;isOutput=true}
+module{id=1;glsl=Shaders/UniformVec4.sn;position=100,0}
+connection{out=1-vector;in=0-color}

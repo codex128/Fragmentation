@@ -1,0 +1,2 @@
+nextId=1
+module{id=0;glsl=Shaders/ColorOutput.sn;position=0,0;isOutput=true}

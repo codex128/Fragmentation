@@ -17,7 +17,8 @@ public class GlslLoader implements AssetLoader {
 
     @Override
     public GLSL load(AssetInfo assetInfo) throws IOException {
-        return new GLSL(assetInfo.openStream());
+        System.out.println("Loaded GLSL shader file from "+assetInfo.getKey().getName());
+        return new GLSL(assetInfo);
     }
     
 }

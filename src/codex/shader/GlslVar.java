@@ -15,15 +15,6 @@ public class GlslVar {
             INPUT = FUNCTION+"input",
             LOCAL = FUNCTION+"local",
             OUTPUT = FUNCTION+"output";
-    public static class Types {
-        
-        public static final String
-                FLOAT = "float",
-                VEC2 = "vec2",
-                VEC3 = "vec3",
-                VEC4 = "vec4";
-        
-    }
     
     protected String function, name, type, def, defProp;
     private String compilerName;
@@ -90,7 +81,7 @@ public class GlslVar {
         if (compilerName == null) {
             throw new NullPointerException("Cannot compile because compiler-assigned name is null!");
         }
-        return type+" "+compilerName+" = "+(source != null ? source.getCompilerName() : def);
+        return type+" "+compilerName+" = "+type+"("+(source != null ? source.getCompilerName() : def)+");";
     }
     
     public void setDefault(String def) {

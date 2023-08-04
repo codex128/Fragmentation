@@ -9,7 +9,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Label;
-import com.simsilica.lemur.component.IconComponent;
 import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.event.MouseEventControl;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public abstract class Socket extends Container {
         hub = new SocketHub(this, "Textures/socket.png");
         hub.getIcon().setColor(ColorRGBA.Red);
         attachChild(hub);
-        hub.addControl(new MouseEventControl(module.getProgram().getSocketConnector()));
+        hub.addControl(new MouseEventControl(module.getProgram().getConnectorInterface()));
     }
     
     public Vector3f getConnectionLocation() {
@@ -59,6 +58,7 @@ public abstract class Socket extends Container {
                 && module != socket.getModule();
     }
     public Connection connect(Socket socket) {
+        System.out.println("connect to another socket");
         var connection = new Connection(this, socket);
         connections.add(connection);
         socket.connections.add(connection);
@@ -94,6 +94,10 @@ public abstract class Socket extends Container {
     }
     public SocketHub getHub() {
         return hub;
-    }    
+    }
+    @Override
+    public String toString() {
+        return module.getId()+"-"+variable.getName();
+    }
     
 }

@@ -4,8 +4,8 @@
  */
 package codex.shader;
 
+import com.jme3.asset.AssetInfo;
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,21 +25,27 @@ public class GLSL {
     
     public static final String NAME_ID = "$name";
     
+    private final AssetInfo info;
     private String name;
     private final ArrayList<String> init = new ArrayList<>();
     private final ArrayList<String> main = new ArrayList<>();
     private final ArrayList<GlslVar> variables = new ArrayList<>();
     private ParseState state;
     
-    public GLSL(InputStream stream) throws IOException, SyntaxException {
-        read(stream);
+    public GLSL(AssetInfo info) throws IOException, SyntaxException {
+        this.info = info;
+        read(this.info.openStream());
     }
     
     private void read(InputStream stream) throws IOException, SyntaxException {
         var reader = new BufferedReader(new InputStreamReader(stream));
         String line;
+        state = ParseState.Def;
         while ((line = reader.readLine()) != null) {
             parse(line);
+        }
+        if (main.isEmpty()) {
+            throw new NullPointerException("Missing main code!");
         }
         if (name == null) {
             name = "Unnamed-GLSL";
@@ -98,6 +104,12 @@ public class GLSL {
         return compileLine(""+main.get(index));
     }
     
+    public AssetInfo getAssetInfo() {
+        return info;
+    }
+    public String getName() {
+        return name;
+    }
     public ArrayList<String> getInit() {
         return init;
     }

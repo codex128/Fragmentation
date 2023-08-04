@@ -5,43 +5,61 @@
 package codex.shader;
 
 import codex.boost.GameAppState;
-import codex.shader.gui.PartialConnection;
-import codex.shader.gui.SocketHub;
+import codex.shader.asset.ProgramAsset;
+import codex.shader.compile.CompileListener;
+import codex.shader.compile.Compiler;
+import codex.shader.compile.CompilingError;
+import codex.shader.gui.ProgramTool;
+import codex.shader.input.SocketConnectorInterface;
 import com.jme3.app.Application;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.input.KeyInput;
+import com.jme3.input.event.KeyInputEvent;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.event.CursorButtonEvent;
 import com.simsilica.lemur.event.CursorEventControl;
 import com.simsilica.lemur.event.CursorListener;
 import com.simsilica.lemur.event.CursorMotionEvent;
-import com.simsilica.lemur.event.MouseListener;
+import com.simsilica.lemur.event.KeyListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author codex
  */
-public class Program extends GameAppState {
+public class Program extends GameAppState implements CompileListener {
     
-    private Node scene;
+    private File file;
+    private Node scene = new Node("program-gui");
     private ArrayList<Module> modules = new ArrayList<>();
+    private ArrayList<Module> selectBuffer = new ArrayList<>();
+    private ArrayList<ProgramTool> tools = new ArrayList<>();
     private Module output;
-    private GeneralInput input;
-    private SocketConnector connector;
+    private KeyHandler keys;
+    private MouseHandler mouse;
+    private SocketConnectorInterface connectInterface;
+    private ProgramTool activeTool;
     
     public Program() {}
     
     @Override
-    protected void init(Application app) {
+    protected void init(Application app) {        
+        
+        scene.setLocalTranslation(windowSize.x/2, windowSize.y/2, 0);
         
         // background quad which is used to track cursor location in the world.
         var background = assetManager.loadModel("Models/background.j3o");
@@ -49,21 +67,44 @@ public class Program extends GameAppState {
         var mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("Color", ColorRGBA.DarkGray);
         background.setMaterial(mat);
-        background.addControl(new CursorEventControl(input));
+        background.addControl(new CursorEventControl(mouse = new MouseHandler()));
         scene.attachChild(background);
         
         // the socket connector, which listens to mouse events on socket hubs
-        connector = new SocketConnector();
+        Material lineMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        lineMat.setColor("Color", ColorRGBA.Blue);
+        connectInterface = new SocketConnectorInterface(this);
+        connectInterface.setMaterial(lineMat);
         
     }
     @Override
-    protected void cleanup(Application app) {}
+    protected void cleanup(Application app) {
+        close();
+    }
     @Override
-    protected void onEnable() {}
+    protected void onEnable() {        
+        guiNode.attachChild(scene);
+        GuiGlobals.getInstance().addKeyListener(keys = new KeyHandler());
+    }
     @Override
-    protected void onDisable() {}
+    protected void onDisable() {        
+        scene.removeFromParent();
+        GuiGlobals.getInstance().removeKeyListener(keys);
+    }
+    @Override
+    public void compileError(CompilingError error) {}
+    @Override
+    public void compileFinished(Compiler compiler) {}
     
+    public void load(File file) throws IOException {
+        if (!file.getName().endsWith(".fnp")) {
+            throw new IllegalArgumentException("Can only load .fnp files!");
+        }
+        this.file = file;
+        load(new FileInputStream(file));
+    }
     public void load(InputStream stream) throws IOException {
+        close();
         var reader = new BufferedReader(new InputStreamReader(stream));
         String line;
         while ((line = reader.readLine()) != null) {
@@ -71,52 +112,140 @@ public class Program extends GameAppState {
                 Module.setNextId(Long.parseLong(line.substring("nextId=".length())));
             }
             else if (line.startsWith("module{")) {
-                var args = line.substring("module{".length(), line.length()-1).split(",");
-                long id = -1;
-                String glslPath = null;
-                var mandatory = false;
-                for (var arg : args) {
-                    var a = arg.split("=", 2);
-                    switch (a[0]) {
-                        case "id" -> id = Long.parseLong(a[1]);
-                        case "glsl" -> glslPath = a[1];
-                        case "mandatory" -> mandatory = Boolean.parseBoolean(a[1]);
-                    }
-                }
-                if (id < 0) {
-                    throw new NullPointerException("Module ID not specified!");
-                }
-                if (glslPath == null) {
-                    throw new NullPointerException("GLSL file path is not defined!");
-                }
-                var glsl = (GLSL)assetManager.loadAsset(glslPath);
-                var module = new Module(this, glsl);
-                module.setIsMandatory(mandatory);
-                scene.attachChild(module);
-                modules.add(module);
+                parseModuleData(line);
             }
             else if (line.startsWith("connection{")) {
-                var args = line.substring("connection{".length(), line.length()-1).split(",");
-                String out = null, in = null;
-                for (var arg : args) {
-                    if (arg.startsWith("out=")) {
-                        out = arg.substring("out=".length());
-                    }
-                    else if (arg.startsWith("in=")) {
-                        in = arg.substring("in=".length());
-                    }
-                }
-                if (out == null || in == null) {
-                    throw new NullPointerException("Insufficient data to make a connection!");
-                }
-                
+                parseConnectionData(line);
             }
         }
     }
-    public void createNewProgram() {
-        
+    public void createFromAsset(String asset) throws IOException {
+        var a = (ProgramAsset)assetManager.loadAsset(asset);
+        load(a.getInfo().openStream());
+    }
+    public void save(File file) throws IOException {
+        if (!file.getName().endsWith(".fnp")) {
+            throw new IllegalArgumentException("Can only save to .fpn files!");
+        }
+        if (file.exists()) file.delete();
+        file.createNewFile();
+        try (var writer = new FileWriter(file)) {
+            writer.write("path="+file.getAbsolutePath());
+            writer.write("\nnextId="+Module.getNextId());
+            for (var m : modules) {
+                writer.write("\nmodule{id="+m.getId()+";"
+                        +"glsl="+m.getGlsl().getAssetInfo().getKey().getName()+";"
+                        +"position="+((int)m.getLocalTranslation().x)+","+((int)m.getLocalTranslation().y));
+                if (m == output) {
+                    writer.write(";isOutput=true");
+                }
+                writer.write("}");
+            }
+            for (var m : modules) {
+                for (var s : m.getInputSockets()) {
+                    if (s.getConnection() == null) continue;
+                    writer.write("\nconnection{out="+s.getConnection().getOutputSocket()+";"
+                            +"in="+s.getConnection().getInputSocket());
+                    writer.write("}");
+                }
+            }
+        }
+    }
+    public void close() {
+        if (modules.isEmpty()) return;
+        connectInterface.terminate();
+        output = null;
+        for (var m : modules) {
+            m.terminate();
+        }
+        modules.clear();
+    }
+    public void export(File file) {
+        if (!file.getName().endsWith(".frag")) {
+            throw new IllegalArgumentException("Only exports to .frag files!");
+        }
+        System.out.println("begin compiling");
+        var compiler = new Compiler(this);
+        compiler.addListener(new CompileListener() {
+            @Override
+            public void compileError(CompilingError error) {}
+            @Override
+            public void compileFinished(Compiler compiler) {
+                System.out.println("compiling finished, writing to file...");
+                System.out.println("compiled code size = "+compiler.getCompiledCode().size());
+                try {
+                    if (file.exists()) file.delete();
+                    file.createNewFile();
+                    try (var writer = new FileWriter(file)) {
+                        for (var line : compiler.getCompiledCode()) {
+                            writer.write(line+"\n");
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        var thread = new Thread(compiler);
+        thread.start();
     }
     
+    private void parseModuleData(String line) {
+        var args = line.substring("module{".length(), line.length()-1).split(";");
+        long id = -1;
+        String glslPath = null;
+        var position = new Vector3f();
+        var isOutput = false;
+        for (var arg : args) {
+            var a = arg.split("=", 2);
+            switch (a[0]) {
+                case "id" -> id = Long.parseLong(a[1]);
+                case "glsl" -> glslPath = a[1];
+                case "position" -> position = parseGuiPositionVector(a[1]);
+                case "isOutput" -> isOutput = Boolean.parseBoolean(a[1]);
+            }
+        }
+        if (id < 0) {
+            throw new NullPointerException("Module ID not specified!");
+        }
+        if (glslPath == null) {
+            throw new NullPointerException("GLSL file path is not defined!");
+        }
+        var glsl = (GLSL)assetManager.loadAsset(glslPath);
+        var module = new Module(this, glsl, id);
+        module.setLocalTranslation(position);
+        if (addModule(module) && isOutput) {
+            output = module;
+        }
+    }
+    private void parseConnectionData(String line) {
+        var args = line.substring("connection{".length(), line.length()-1).split(";");
+        String out = null, in = null;
+        for (var arg : args) {
+            if (arg.startsWith("out=")) {
+                out = arg.substring("out=".length());
+            }
+            else if (arg.startsWith("in=")) {
+                in = arg.substring("in=".length());
+            }
+        }
+        if (out == null || in == null) {
+            System.err.println("Warning: insufficient data to make a connection");
+        }
+        if (connect(getSocketByAddress(out), getSocketByAddress(in)) == null) {
+            System.err.println("Warning: could not make connection ("+out+" -> "+in+")");
+        }
+    }
+    private Vector3f parseGuiPositionVector(String data) {
+        var args = data.split(",", 2);
+        if (args.length < 2) {
+            throw new NullPointerException("Missing vector data!");
+        }
+        Vector3f position = new Vector3f();
+        position.x = Float.parseFloat(args[0]);
+        position.y = Float.parseFloat(args[1]);
+        return position;
+    }
     private Socket getSocketByAddress(String address) {
         var args = address.split("-", 2);
         if (args.length < 2) {
@@ -125,33 +254,87 @@ public class Program extends GameAppState {
         long id = Long.parseLong(args[0]);
         var module = getModuleById(id);
         if (module == null) {
-            throw new NullPointerException("Module ID#"+id+" does not exist!");
+            throw new NullPointerException("Module#"+id+" does not exist!");
         }
         var socket = module.getSocketByVariableName(args[1]);
         if (socket == null) {
-            throw new NullPointerException("Socket");
+            throw new NullPointerException("Socket \""+args[1]+"\" does not exist in "+module+"!");
         }
+        return socket;
     }
     private Module getModuleById(long id) {
         return modules.stream().filter(m -> m.getId() == id).findAny().orElse(null);
     }
     
+    public boolean addModule(Module m) {
+        if (modules.contains(m)) return false;
+        scene.attachChild(m);
+        modules.add(m);
+        return true;
+    }
+    public boolean removeModule(Module m) {
+        if (m == output) return false;
+        if (modules.remove(m)) {
+            m.terminate();
+            m.removeFromParent();
+            return true;
+        }
+        return false;
+    }
+    public Connection connect(Socket s1, Socket s2) {
+        if (!s1.acceptConnectionTo(s2) || !s2.acceptConnectionTo(s1)) {
+            return null;
+        }
+        var connection = s1.connect(s2);
+        connection.setMaterial(connectInterface.getMaterial());
+        scene.attachChild(connection);
+        return connection;
+    }
+    
+    public boolean requestCapture(ProgramTool tool) {
+        if (activeTool == null) {
+            activeTool = tool;
+            return true;
+        }
+        return false;
+    }
+    public void releaseCapture(ProgramTool tool) {
+        if (tool == activeTool) {
+            activeTool = null;
+        }
+    }
+    public boolean captureAvailable() {
+        return activeTool == null;
+    }
+    
+    public Node getGuiScene() {
+        return scene;
+    }
     public Collection<Module> getModules() {
         return modules;
     }
     public Module getOutputModule() {
         return output;
     }
-    public SocketConnector getSocketConnector() {
-        return connector;
+    public SocketConnectorInterface getConnectorInterface() {
+        return connectInterface;
     }
     
-    public class GeneralInput implements CursorListener {
+    public class KeyHandler implements KeyListener {   
+        @Override
+        public void onKeyEvent(KeyInputEvent evt) {
+            tools.stream().forEach(t -> t.onKeyEvent(evt));
+            if (evt.isPressed() && evt.getKeyCode() == KeyInput.KEY_SPACE) {
+                export(new File("/home/codex/simple.frag"));
+            }
+        }
+    }
+    public class MouseHandler implements CursorListener {
         
         @Override
         public void cursorButtonEvent(CursorButtonEvent event, Spatial target, Spatial capture) {
             if (!event.isPressed()) {
-                connector.terminate();
+                connectInterface.terminate();
             }
         }
         @Override
@@ -160,61 +343,7 @@ public class Program extends GameAppState {
         public void cursorExited(CursorMotionEvent event, Spatial target, Spatial capture) {}
         @Override
         public void cursorMoved(CursorMotionEvent event, Spatial target, Spatial capture) {
-            if (connector.connection != null) {
-                connector.connection.setCursorLocation(event.getCollision().getContactPoint());
-            }
-        }
-        
-    }
-    public class SocketConnector implements MouseListener {
-        
-        PartialConnection connection;
-        Material mat;
-        
-        public SocketConnector() {
-            mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded");
-            mat.setColor("Color", ColorRGBA.Blue);
-        }
-        
-        @Override
-        public void mouseButtonEvent(MouseButtonEvent event, Spatial target, Spatial capture) {
-            if (event.isPressed() && target instanceof SocketHub) {
-                var hub = (SocketHub)target;
-                if (hub.getSocket().getType() == Socket.IO.Input && hub.getSocket().getNumConnections() > 0) {
-                    var c = hub.getSocket().getConnectionList().get(0);
-                    connection = new PartialConnection(c.getOutputSocket().getHub());
-                    c.terminate();
-                }
-                else {
-                    connection = new PartialConnection(hub);
-                }
-                connection.setMaterial(mat);
-                scene.attachChild(connection);
-                event.setConsumed();
-            }
-            else if (event.isReleased() && connection != null && target != connection.getConnectedHub() && target instanceof SocketHub) {
-                var hub = (SocketHub)target;
-                if (hub.getSocket().getType() != connection.getConnectedHub().getSocket().getType()
-                        && hub.getSocket().acceptConnectionTo(connection.getConnectedHub().getSocket())
-                        && connection.getConnectedHub().getSocket().acceptConnectionTo(hub.getSocket())) {
-                    var c = hub.getSocket().connect(connection.getConnectedHub().getSocket());
-                    scene.attachChild(c.createLineGeometry(mat));
-                }
-                terminate();
-                event.setConsumed();
-            }
-        }
-        @Override
-        public void mouseEntered(MouseMotionEvent event, Spatial target, Spatial capture) {}
-        @Override
-        public void mouseExited(MouseMotionEvent event, Spatial target, Spatial capture) {}
-        @Override
-        public void mouseMoved(MouseMotionEvent event, Spatial target, Spatial capture) {}
-        
-        public void terminate() {
-            if (connection == null) return;
-            connection.removeFromParent();
-            connection = null;
+            connectInterface.setCursorLocation(event.getCollision().getContactPoint());
         }
         
     }

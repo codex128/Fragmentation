@@ -31,7 +31,7 @@ public abstract class Argument extends Container {
     
     public static Argument create(InputSocket socket) {
         var arg = make(socket);
-        arg.displayValue(socket.getVariable().getDefault());
+        if (arg != null) arg.displayValue(socket.getVariable().getDefault());
         return arg;
     }
     private static Argument make(InputSocket socket) {
@@ -51,7 +51,9 @@ public abstract class Argument extends Container {
             case "String" -> {
                 return new StringArgument(socket);
             }
-            default -> throw new NullPointerException("Type \""+type+"\" cannot have a default argument!");
+            default -> {
+                return null;
+            }
         }
     }
     private static void validate(GlslVar var) {

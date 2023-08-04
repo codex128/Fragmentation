@@ -15,12 +15,12 @@ import com.jme3.scene.control.AbstractControl;
  *
  * @author codex
  */
-public class Connection extends AbstractControl {
+public class Connection extends LineGeometry {
     
     private Socket out, in;
-    private LineGeometry line;
     
     public Connection(Socket s1, Socket s2) {
+        super("connection-geometry");
         validate(s1, s2);
         if (s1.getType() == Socket.IO.Input) {
             in = s1;
@@ -30,16 +30,6 @@ public class Connection extends AbstractControl {
             in = s2;
             out = s1;
         }
-    }
-    
-    public LineGeometry createLineGeometry(Material mat) {
-        LineGeometry g = new LineGeometry("connection-line");
-        g.setMaterial(mat);
-        g.addControl(this);
-        return g;
-    }
-    public LineGeometry getLineGeometry() {
-        return line;
     }
     
     public Socket getOutputSocket() {
@@ -64,31 +54,16 @@ public class Connection extends AbstractControl {
     }
 
     @Override
-    protected void controlUpdate(float tpf) {
-        line.setPoints(out.getConnectionLocation(), in.getConnectionLocation());
-    }
-    @Override
-    protected void controlRender(RenderManager rm, ViewPort vp) {}
-    @Override
-    public void setSpatial(Spatial spat) {
-        super.setSpatial(spat);
-        if (spatial != null) {
-            if (!(spatial instanceof LineGeometry)) {
-                throw new IllegalArgumentException("Requires LineGeometry!");
-            }
-            line = (LineGeometry)spatial;
-        }
-        else {
-            line = null;
-        }
+    public void updateLogicalState(float tpf) {
+        super.updateLogicalState(tpf);
+        setPoints(out.getConnectionLocation(), in.getConnectionLocation());
     }
     
     public void terminate() {
         out.removeConnection(this);
         in.removeConnection(this);
         out = in = null;
-        spatial.removeFromParent();
-        spatial.removeControl(this);
+        removeFromParent();
     }
     
 }
