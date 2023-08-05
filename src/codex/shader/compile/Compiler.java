@@ -20,9 +20,16 @@ import java.util.LinkedList;
  */
 public class Compiler implements Runnable, Listenable<CompileListener> {
     
-    private static final String PREFIX = "gvn_";
+    private static final String PREFIX = "fav_";
     private static final String[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     private static final String TAB = "    ";
+    
+    private final static int
+            GENERICS = 0,
+            VERIFY_GEN = GENERICS+1,
+            STATICS = VERIFY_GEN+1,
+            INITS = STATICS+1,
+            MAIN = INITS+1;
     
     private final Program program;
     private int state = 0;
@@ -51,13 +58,13 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 break;
             }
         }
-        notifyListeners(l -> l.compileFinished(this));
         cleanupModules();
         if (error == null) {
-            
+            notifyListeners(l -> l.compileFinished(this));            
         }
         else {
             System.err.println("Compiler Error: "+error.getErrorMessage());
+            notifyListeners(l -> l.compileError(error));
         }
     }    
     @Override
@@ -103,7 +110,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 // since the input variable is connected to an output variable, set the output as the input's source
                 if (socket.getVariable().getCompilerSource() == null) {
                     socket.getVariable().setCompilerSource(socket.getConnection().getOutputSocket().getVariable());
-                    if (!socket.getVariable().getType().equals(socket.getVariable().getCompilerSource().getType())) {
+                    if (!socket.varTypeCompatible(socket.getConnection().getOutputSocket())) {
                         // cannot continue compiling because two sockets are connected illegally
                         error = new CompilingError(socket.getVariable().getType()+" cannot be cast to "+socket.getVariable().getCompilerSource().getType());
                         return;
@@ -142,31 +149,72 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         if (runCompileStep(state)) {
             currentModule = null;
             substep = 0;
-            state++;
             switch (state) {
-                case 2 -> {
+                case INITS -> {
                     append("void main() {");
-                    state++;
                 }
-                case 4 -> {
+                case MAIN -> {
                     append("}");
                     return true;
                 }
                 default -> moduleIterator = null;
             }
+            state++;
         }
         return false;
     }
     private boolean runCompileStep(int step) {
         return switch (step) {
-            case 0 -> compileStaticCode();
-            case 1 -> compileInitCode();
-            case 3 -> compileMainCode();
-            default -> true;
+            case GENERICS   -> compileGenerics();
+            case VERIFY_GEN -> verifyGenerics();
+            case STATICS    -> compileStaticCode();
+            case INITS      -> compileInitCode();
+            case MAIN       -> compileMainCode();
+            default         -> true;
         };
     }
     private void append(String line) {
+        System.out.println("append ("+line.length()+"): "+line);
         compiledCode.add(line);
+    }
+    private boolean compileGenerics() {
+        if (moduleIterator == null) {
+            moduleIterator = compileQueue.iterator();
+        }
+        if (currentModule == null) {
+            if (!moduleIterator.hasNext()) {
+                moduleIterator = null;
+                return true;
+            }
+            currentModule = moduleIterator.next();
+            if (currentModule.getGlsl().getVariables().isEmpty()) {
+                currentModule = null;
+                return false;
+            }
+        }
+        while (true) {
+            boolean found = !currentModule.getGlsl().compileGenerics(substep++);
+            if (substep >= currentModule.getGlsl().getVariables().size()) {
+                currentModule = null;
+                substep = 0;
+                break;
+            }
+            if (found) {
+                break;
+            }
+        }
+        return false;
+    }
+    private boolean verifyGenerics() {
+        for (var m : compileQueue) {
+            for (var s : m.getInputSockets()) {
+                if (s.getConnection() != null && !s.varTypeMatch(s.getConnection().getOutputSocket())) {
+                    error = new CompilingError(s.getVariable().getCompilerSource().getType()+" cannot be cast to "+s.getVariable().getType());
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     private boolean compileStaticCode() {
         if (staticIterator == null) {

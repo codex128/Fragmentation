@@ -52,11 +52,13 @@ public abstract class Socket extends Container {
         return hub.getPortLocation();
     }
     public boolean acceptConnectionTo(Socket socket) {
-        return varTypeMatches(socket) && type != socket.getType() && module != socket.getModule();
+        return varTypeCompatible(socket) && type != socket.getType() && module != socket.getModule();
     }
-    public boolean varTypeMatches(Socket socket) {
-        return variable.getType().equals(socket.getVariable().getType())
-                || variable.isGeneric() || socket.getVariable().isGeneric();
+    public boolean varTypeCompatible(Socket socket) {
+        return varTypeMatch(socket) || variable.isGeneric() || socket.getVariable().isGeneric();
+    }
+    public boolean varTypeMatch(Socket socket) {
+        return variable.getType().equals(socket.getVariable().getType());
     }
     public Connection connect(Socket socket) {
         var connection = new Connection(this, socket);

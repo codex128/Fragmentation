@@ -23,7 +23,36 @@ public class StringVar extends GlslVar {
     }
     @Override
     public String compileUsages(String string) {
-        return string.replaceAll("{"+name+"}", def);
+        return replaceUsages(string, "{"+name+"}", def);
+    }
+    
+    public static String replaceUsages(String string, String replace, String replacement) {
+        var compiled = new StringBuilder();
+        var chunk = new StringBuilder();
+        int index = 0;
+        for (int i = 0; i < string.length(); i++) {
+            char c = string.charAt(i);
+            // only build the chunk if the preceding character is a margin character
+            if (c == replace.charAt(index)) {
+                chunk.append(c);
+                index++;
+            }
+            // dump chunk because it is invalid
+            else {
+                compiled.append(c);
+                index = 0;
+                if (!chunk.isEmpty()) {
+                    chunk.delete(0, chunk.length());
+                }
+            }
+            // if we've built a full variable, insert the replacement string
+            if (index == replace.length()) {
+                compiled.append(replacement);
+                chunk.delete(0, chunk.length());
+                index = 0;
+            }
+        }
+        return compiled.toString();
     }
     
 }

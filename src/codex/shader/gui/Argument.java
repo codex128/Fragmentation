@@ -15,15 +15,11 @@ import com.simsilica.lemur.Container;
  */
 public abstract class Argument extends Container {
     
-    private final InputSocket socket;
+    protected final InputSocket socket;
     
     public Argument(InputSocket socket) {
         validate(socket.getVariable());
         this.socket = socket;
-    }
-    
-    public void applyToDefault() {
-        socket.getVariable().setDefault(getDefaultValue());
     }
     
     public abstract void displayValue(String value);
@@ -34,30 +30,21 @@ public abstract class Argument extends Container {
     
     public static Argument create(InputSocket socket) {
         var arg = make(socket);
-        if (arg != null) arg.displayValue(socket.getVariable().getDefault());
+        if (arg != null) {
+            arg.displayValue(socket.getVariable().getDefault());
+        }
         return arg;
     }
     private static Argument make(InputSocket socket) {
         var type = socket.getVariable().getType();
-        switch (type) {
-            case "float" -> {
-                return new FloatArgument(socket);
-            }
-            case "int" -> {
-                if (socket.getVariable().getDefaultProperties() != null) {
-                    return new StateArgument(socket);
-                }
-                else {
-                    return new IntegerArgument(socket);
-                }
-            }
-            case "String" -> {
-                return new StringArgument(socket);
-            }
-            default -> {
-                return null;
-            }
-        }
+        return switch (type) {
+            case "float" -> new FloatArgument(socket);
+            case "int" -> new IntegerArgument(socket);
+            case "state" -> new StateArgument(socket);
+            case "generic" -> new GenericArgument(socket);
+            case "String" -> new StringArgument(socket);
+            default -> null;
+        };
     }
     private static void validate(GlslVar var) {
         if (!var.isInput() || var.getDefault() == null) {

@@ -44,7 +44,7 @@ public class Connection extends LineGeometry {
         if (s1.getType() == s2.getType()) {
             throw new IllegalStateException("Must have opposite I/O types!");
         }
-        if (!s1.getVariable().getType().equals(s2.getVariable().getType())) {
+        if (!s1.varTypeCompatible(s2)) {
             throw new IllegalStateException("Both socket's variable types must match!");
         }
     }

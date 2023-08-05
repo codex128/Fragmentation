@@ -16,7 +16,7 @@ public class GlslVar {
             LOCAL = FUNCTION+"local",
             OUTPUT = FUNCTION+"output";
     
-    protected String function, name, type, def, defProp;
+    protected String function, name, type, def;
     private String compilerName;
     private GlslVar source;
     
@@ -84,6 +84,12 @@ public class GlslVar {
         return type+" "+compilerName+" = "+type+"("+(source != null ? source.getCompilerName() : def)+");";
     }
     
+    protected void setName(String name) {
+        this.name = name;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
     public void setDefault(String def) {
         assert def != null;
         this.def = def;
@@ -100,9 +106,6 @@ public class GlslVar {
     }
     public String getDefault() {
         return def;
-    }
-    public String getDefaultProperties() {
-        return defProp;
     }
     public String getCompilerName() {
         return compilerName;
@@ -155,21 +158,26 @@ public class GlslVar {
             }
             default -> throw new SyntaxException("Unknown identifier \""+function+"\"!");
         }
+        if (name == null) {
+            throw new NullPointerException("Variable name is null!");
+        }
         if (!Character.isLetter(name.charAt(0))) {
             throw new SyntaxException("Variable name cannot begin with '"+name.charAt(0)+"'!");
         }
         GlslVar var;
-        if ("String".equals(type)) {
+        if ("generic".equals(type)) {
+            var = new GenericVar();
+        }
+        else if ("String".equals(type)) {
             var = new StringVar();
         }
         else {
             var = new GlslVar();
         }
-        var.function = function;
-        var.type = type;
+        if (function != null)   var.function = function;
+        if (type != null)       var.type = type;
+        if (def != null)        var.def = def;
         var.name = name;
-        var.def = def;
-        var.defProp = defProp;
         return var;
     }
     private static void validate(String[] args, int length) throws SyntaxException {

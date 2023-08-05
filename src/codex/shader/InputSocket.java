@@ -39,7 +39,7 @@ public class InputSocket extends Socket {
     }
     
     public static InputSocket create(Module module, GlslVar var) {
-        if (var.getType() == null || !var.getType().equals("String")) {
+        if (var.getType() == null || (!var.getType().equals("String") && !var.getType().equals("generic"))) {
             return new InputSocket(module, var);
         }
         else {

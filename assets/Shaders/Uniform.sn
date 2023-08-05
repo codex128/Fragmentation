@@ -1,0 +1,13 @@
+$name Uniform
+
+@input generic type vec4
+@input String uniformName m_Vec4
+
+@output <type> value
+
+<init>
+
+uniform <type> {uniformName};
+const <type> value = <type>({uniformName});
+
+</init>

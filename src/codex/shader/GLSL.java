@@ -48,9 +48,6 @@ public class GLSL {
             if (line.isBlank()) continue;
             parse(line);
         }
-        if (main.isEmpty()) {
-            throw new NullPointerException("Missing main code!");
-        }
         if (name == null) {
             name = "Unnamed-GLSL";
         }
@@ -116,8 +113,11 @@ public class GLSL {
     public boolean compileGenerics(int index) {
         var v = variables.get(index);
         if (v.isGeneric()) {
-            for (var type : variables) {
-                if (v == type) continue;
+            for (var generic : variables) {
+                if (v == generic) continue;
+                if (generic instanceof GenericVar && ((GenericVar)generic).applyTypeToVar(v)) {
+                    break;
+                }
             }
             return true;
         }
