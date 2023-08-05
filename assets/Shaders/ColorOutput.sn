@@ -1,4 +1,4 @@
-$name=Fragment Output
+$name Fragment Output
 
 @input vec4 color 0.0,0.0,1.0,1.0
 

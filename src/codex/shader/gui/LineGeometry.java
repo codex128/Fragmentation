@@ -24,7 +24,7 @@ public class LineGeometry extends Geometry {
         setPoints(a, b);
     }
     
-    public void setPoints(Vector3f a, Vector3f b) {
+    public final void setPoints(Vector3f a, Vector3f b) {
         setLocalTranslation(a);
         setLocalScale(pointB.set(b).subtractLocal(a));
     }

@@ -7,7 +7,9 @@ package codex.shader;
 import com.simsilica.lemur.Axis;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.FillMode;
+import com.simsilica.lemur.Label;
 import com.simsilica.lemur.component.BoxLayout;
+import com.simsilica.lemur.style.ElementId;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -33,13 +35,17 @@ public class Module extends Container {
         this.program = program;
         this.glsl = glsl;
         createSockets();
+        initGui();
     }
     
     private void createSockets() {
         glsl.getInputVariables().forEach(v -> inputs.add(new InputSocket(this, v)));
         glsl.getOutputVariables().forEach(v -> outputs.add(new OutputSocket(this, v)));
+    }
+    private void initGui() {
         var layout = new BoxLayout(Axis.Y, FillMode.Even);
         setLayout(layout);
+        addChild(new Label(glsl.getName(), new ElementId("header")));
         for (var s : outputs) {
             addChild(s);
         }

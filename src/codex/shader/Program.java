@@ -4,6 +4,7 @@
  */
 package codex.shader;
 
+import codex.boost.ColorHSBA;
 import codex.boost.GameAppState;
 import codex.shader.asset.ProgramAsset;
 import codex.shader.compile.CompileListener;
@@ -19,7 +20,9 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.simsilica.lemur.Container;
 import com.simsilica.lemur.GuiGlobals;
+import com.simsilica.lemur.component.QuadBackgroundComponent;
 import com.simsilica.lemur.event.CursorButtonEvent;
 import com.simsilica.lemur.event.CursorEventControl;
 import com.simsilica.lemur.event.CursorListener;
@@ -45,6 +48,7 @@ public class Program extends GameAppState implements CompileListener {
     
     private File file;
     private Node scene = new Node("program-gui");
+    private Node moduleScene = new Node("module-gui");
     private ArrayList<Module> modules = new ArrayList<>();
     private ArrayList<Module> selectBuffer = new ArrayList<>();
     private ArrayList<ProgramTool> tools = new ArrayList<>();
@@ -59,14 +63,14 @@ public class Program extends GameAppState implements CompileListener {
     @Override
     protected void init(Application app) {        
         
-        scene.setLocalTranslation(windowSize.x/2, windowSize.y/2, 0);
+        scene.attachChild(moduleScene);
+        moduleScene.setLocalTranslation(windowSize.x/2, windowSize.y/2, 0);
         
         // background quad which is used to track cursor location in the world.
-        var background = assetManager.loadModel("Models/background.j3o");
-        background.setLocalScale(2000f);
-        var mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.DarkGray);
-        background.setMaterial(mat);
+        var background = new Container();
+        background.setLocalTranslation(0f, windowSize.y, -10f);
+        background.setBackground(new QuadBackgroundComponent(new ColorHSBA(0f, 0f, .01f, 1f).toRGBA()));
+        background.setPreferredSize(windowSize);
         background.addControl(new CursorEventControl(mouse = new MouseHandler()));
         scene.attachChild(background);
         
@@ -171,8 +175,6 @@ public class Program extends GameAppState implements CompileListener {
             public void compileError(CompilingError error) {}
             @Override
             public void compileFinished(Compiler compiler) {
-                System.out.println("compiling finished, writing to file...");
-                System.out.println("compiled code size = "+compiler.getCompiledCode().size());
                 try {
                     if (file.exists()) file.delete();
                     file.createNewFile();
@@ -268,7 +270,7 @@ public class Program extends GameAppState implements CompileListener {
     
     public boolean addModule(Module m) {
         if (modules.contains(m)) return false;
-        scene.attachChild(m);
+        moduleScene.attachChild(m);
         modules.add(m);
         return true;
     }
@@ -287,7 +289,7 @@ public class Program extends GameAppState implements CompileListener {
         }
         var connection = s1.connect(s2);
         connection.setMaterial(connectInterface.getMaterial());
-        scene.attachChild(connection);
+        moduleScene.attachChild(connection);
         return connection;
     }
     
@@ -308,7 +310,7 @@ public class Program extends GameAppState implements CompileListener {
     }
     
     public Node getGuiScene() {
-        return scene;
+        return moduleScene;
     }
     public Collection<Module> getModules() {
         return modules;

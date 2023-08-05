@@ -8,8 +8,16 @@ package codex.shader.compile;
  *
  * @author codex
  */
-public abstract class CompilingError {
+public class CompilingError {
     
-    public abstract String getErrorMessage();
+    private String msg;
+    
+    public CompilingError(String msg) {
+        this.msg = msg;
+    }
+    
+    public String getErrorMessage() {
+        return msg;
+    }
     
 }

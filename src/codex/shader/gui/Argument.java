@@ -23,11 +23,14 @@ public abstract class Argument extends Container {
     }
     
     public void applyToDefault() {
-        socket.getVariable().setDefault(getValue());
+        socket.getVariable().setDefault(getDefaultValue());
     }
     
-    public abstract void displayValue(String value);    
-    public abstract String getValue();
+    public abstract void displayValue(String value);
+    public abstract String getDefaultValue();
+    public void compile(GlslVar var) {
+        var.setDefault(getDefaultValue());
+    }
     
     public static Argument create(InputSocket socket) {
         var arg = make(socket);

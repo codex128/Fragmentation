@@ -114,11 +114,11 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 // check if this input socket is connected to anything
                 if (socket.getConnection() == null) {
                     if (socket.getArgument() != null) {
-                        socket.getVariable().setDefault(socket.getArgument().getValue());
+                        socket.getArgument().compile(socket.getVariable());
                     }
                     else if (socket.getVariable().getDefault() == null) {
                         // compiling must be stopped because a required socket was not connected to anything
-                        error = new UnconnectedSocketError(socket);
+                        error = new CompilingError("Socket \""+socket.getName()+"\" must be connected!");
                         return;
                     }
                     continue;
@@ -126,6 +126,10 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 // since the input variable is connected to an output variable, set the output as the input's source
                 if (socket.getVariable().getCompilerSource() == null) {
                     socket.getVariable().setCompilerSource(socket.getConnection().getOutputSocket().getVariable());
+                    if (!socket.getVariable().getType().equals(socket.getVariable().getCompilerSource().getType())) {
+                        error = new CompilingError(socket.getVariable().getType()+" cannot be cast to "+socket.getVariable().getCompilerSource().getType());
+                        return;
+                    }
                 }
                 // we can check if it's unqueued by the source variable compiler name
                 if (socket.getVariable().getCompilerSource().getCompilerName() == null) {

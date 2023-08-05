@@ -5,11 +5,7 @@
 package codex.shader;
 
 import codex.shader.gui.LineGeometry;
-import com.jme3.material.Material;
-import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.ViewPort;
-import com.jme3.scene.Spatial;
-import com.jme3.scene.control.AbstractControl;
+import com.jme3.math.Vector3f;
 
 /**
  *
@@ -55,8 +51,9 @@ public class Connection extends LineGeometry {
 
     @Override
     public void updateLogicalState(float tpf) {
-        super.updateLogicalState(tpf);
-        setPoints(out.getConnectionLocation(), in.getConnectionLocation());
+        //super.updateLogicalState(tpf);
+        Vector3f parentLocation = parent.getWorldTranslation();
+        setPoints(out.getConnectionLocation().subtract(parentLocation), in.getConnectionLocation().subtract(parentLocation));
     }
     
     public void terminate() {

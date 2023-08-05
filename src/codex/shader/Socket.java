@@ -43,14 +43,13 @@ public abstract class Socket extends Container {
         layout = new SpringGridLayout();
         setLayout(layout);
         layout.addChild(0, 0, new Label(variable.getName()));
-        hub = new SocketHub(this, "Textures/socket.png");
-        hub.getIcon().setColor(ColorRGBA.Red);
+        hub = new SocketHub(this, ColorRGBA.Red);
         attachChild(hub);
         hub.addControl(new MouseEventControl(module.getProgram().getConnectorInterface()));
     }
     
     public Vector3f getConnectionLocation() {
-        return hub.getWorldTranslation();
+        return hub.getPortLocation();
     }
     public boolean acceptConnectionTo(Socket socket) {
         return variable.getType().equals(socket.getVariable().getType())
@@ -58,7 +57,6 @@ public abstract class Socket extends Container {
                 && module != socket.getModule();
     }
     public Connection connect(Socket socket) {
-        System.out.println("connect to another socket");
         var connection = new Connection(this, socket);
         connections.add(connection);
         socket.connections.add(connection);

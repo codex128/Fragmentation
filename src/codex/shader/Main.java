@@ -3,6 +3,7 @@ package codex.shader;
 import codex.shader.asset.FileBrowser;
 import codex.shader.asset.GlslLoader;
 import codex.shader.asset.ProgramAsset;
+import codex.shader.gui.FragmentationStyle;
 import com.jme3.app.SimpleApplication;
 import com.jme3.renderer.RenderManager;
 import com.simsilica.lemur.GuiGlobals;
@@ -23,6 +24,8 @@ public class Main extends SimpleApplication {
     public void simpleInitApp() {
         
         GuiGlobals.initialize(this);
+        FragmentationStyle.initialize(GuiGlobals.getInstance().getStyles());
+        GuiGlobals.getInstance().getStyles().setDefaultStyle(FragmentationStyle.STYLE);
         
         assetManager.registerLoader(ProgramAsset.class, "fnp");
         assetManager.registerLoader(GlslLoader.class, "sn");

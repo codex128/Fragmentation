@@ -30,7 +30,7 @@ public class FloatArgument extends Argument {
         field.setText(value);
     }
     @Override
-    public String getValue() {
+    public String getDefaultValue() {
         return field.getText();
     }
     

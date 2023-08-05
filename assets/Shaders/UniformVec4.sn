@@ -1,4 +1,4 @@
-$name=Vec4 Uniform
+$name Vec4 Uniform
 
 @input String uniformName m_Vec4
 @output vec4 vector

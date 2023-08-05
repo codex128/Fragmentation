@@ -27,8 +27,8 @@ public class StateArgument extends StringArgument {
         super.displayValue(index[Integer.parseInt(value)]);
     }
     @Override
-    public String getValue() {
-        var value = super.getValue();
+    public String getDefaultValue() {
+        var value = super.getDefaultValue();
         int i = 0;
         for (var v : index) {
             if (v.equals(value)) return ""+i;
