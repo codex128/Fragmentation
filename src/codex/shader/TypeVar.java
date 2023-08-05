@@ -8,22 +8,18 @@ package codex.shader;
  *
  * @author codex
  */
-public class StringVar extends GlslVar {
+public class TypeVar extends StringVar {
     
-    protected StringVar() {
+    protected TypeVar() {
         super();
     }
-    public StringVar(String function, String name, String type, String def) {
+    public TypeVar(String function, String name, String type, String def) {
         super(function, name, type, def);
-    }    
+    }
     
     @Override
-    public String compileDeclaration() {
-        return null;
-    }
-    @Override
     public String compileUsages(String string) {
-        return string.replaceAll("{"+name+"}", def);
+        return string.replaceAll("<"+name+">", def);
     }
     
 }

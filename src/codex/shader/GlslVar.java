@@ -120,6 +120,9 @@ public class GlslVar {
     public boolean isOutput() {
         return function.equals(OUTPUT);
     }
+    public boolean isGeneric() {
+        return type.startsWith("<") && type.endsWith(">");
+    }
     
     public static GlslVar parse(String source) throws SyntaxException {
         String[] args = source.split(" ", 4);

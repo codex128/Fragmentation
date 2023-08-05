@@ -5,6 +5,8 @@
 package codex.shader.compile;
 
 import codex.boost.Listenable;
+import codex.shader.GLSL;
+import codex.shader.GlslStatic;
 import codex.shader.Module;
 import codex.shader.Program;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import java.util.LinkedList;
  */
 public class Compiler implements Runnable, Listenable<CompileListener> {
     
+    private static final String PREFIX = "gvn_";
     private static final String[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     private static final String TAB = "    ";
     
@@ -26,9 +29,13 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     private final LinkedList<Module> compileQueue = new LinkedList<>();
     private final ArrayList<String> compiledCode = new ArrayList<>();
     private Iterator<Module> moduleIterator;
+    private Iterator<GlslStatic> staticIterator;
     private Module currentModule;
+    private GLSL staticSource;
+    private GlslStatic currentStatic;
     private int substep = 0;
     private int nextNameIndex = 0;
+    private int nameIteration = 0;
     private CompilingError error;
     private LinkedList<CompileListener> listeners = new LinkedList<>();
     
@@ -61,44 +68,13 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return compiledCode;
     }
     
+    // setup
     private void initialize() {
         queueModules();
-        moduleIterator = compileQueue.iterator();
+        //moduleIterator = compileQueue.iterator();
+        //staticIterator = GLSL.getStaticGlsl().iterator();
     }
-    private boolean compile() {
-        if (currentModule == null) {
-            if (moduleIterator == null) {
-                moduleIterator = compileQueue.iterator();
-            }
-            currentModule = moduleIterator.next();
-            substep = 0;
-        }
-        if (runCompileStep(state, currentModule)) {
-            currentModule = null;
-            if (!moduleIterator.hasNext()) {
-                state++;
-                if (state == 1) {
-                    append("void main() {");
-                    state++;
-                }
-                else if (state == 3) {
-                    append("}");
-                    state++;
-                }                
-                if (state > 3) {
-                    return true;
-                }
-                else {
-                    moduleIterator = null;
-                }
-            }
-        }
-        return false;
-    }
-    
-    // setup
     private void queueModules() {
-        compileQueue.clear();
         var stack = new LinkedList<Module>();
         // do the output module first, which is guaranteed to have no modules depending on it
         stack.add(program.getOutputModule());
@@ -113,6 +89,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 }
                 // check if this input socket is connected to anything
                 if (socket.getConnection() == null) {
+                    // if there is an argument, compile the argument
                     if (socket.getArgument() != null) {
                         socket.getArgument().compile(socket.getVariable());
                     }
@@ -127,6 +104,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 if (socket.getVariable().getCompilerSource() == null) {
                     socket.getVariable().setCompilerSource(socket.getConnection().getOutputSocket().getVariable());
                     if (!socket.getVariable().getType().equals(socket.getVariable().getCompilerSource().getType())) {
+                        // cannot continue compiling because two sockets are connected illegally
                         error = new CompilingError(socket.getVariable().getType()+" cannot be cast to "+socket.getVariable().getCompilerSource().getType());
                         return;
                     }
@@ -153,40 +131,119 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     }
     private String generateNextName() {
         if (nextNameIndex >= letters.length) {
-            throw new IndexOutOfBoundsException("Compiler ran out of unique variable names!");
+            nextNameIndex = 0;
+            nameIteration++;
         }
-        return letters[nextNameIndex++];
+        return PREFIX+letters[nextNameIndex++]+(nameIteration > 0 ? nameIteration : "");
     }
     
     // compile
-    private boolean runCompileStep(int step, Module m) {
+    private boolean compile() {
+        if (runCompileStep(state)) {
+            currentModule = null;
+            substep = 0;
+            state++;
+            switch (state) {
+                case 2 -> {
+                    append("void main() {");
+                    state++;
+                }
+                case 4 -> {
+                    append("}");
+                    return true;
+                }
+                default -> moduleIterator = null;
+            }
+        }
+        return false;
+    }
+    private boolean runCompileStep(int step) {
         return switch (step) {
-            case 0 -> compileInitCode(m);
-            case 2 -> compileMainCode(m);
+            case 0 -> compileStaticCode();
+            case 1 -> compileInitCode();
+            case 3 -> compileMainCode();
             default -> true;
         };
     }
     private void append(String line) {
         compiledCode.add(line);
     }
-    private boolean compileInitCode(Module m) {
-        System.out.println("compile init code...");
-        if (m.getGlsl().getInit().isEmpty()) return true;
-        append(m.getGlsl().compileInitLine(substep++));
-        return substep >= m.getGlsl().getInit().size();
-    }
-    private boolean compileMainCode(Module m) {
-        System.out.println("compile main code...");
-        if (substep >= m.getInputSockets().size()) {
-            // append main code
-            append(TAB+m.getGlsl().compileMainLine((substep++)-m.getInputSockets().size()));
+    private boolean compileStaticCode() {
+        if (staticIterator == null) {
+            staticIterator = GLSL.getStaticGlsl().iterator();
         }
-        else {
+        if (currentStatic == null) {
+            if (!staticIterator.hasNext()) return true;
+            currentStatic = staticIterator.next();
+        }
+        if (staticSource == null) {
+            for (var m : compileQueue) {
+                if (m.getGlsl().getAssetName().equals(currentStatic.getId())) {
+                    staticSource = m.getGlsl();
+                    break;
+                }
+            }
+            if (staticSource == null) {
+                staticIterator.remove();
+                currentStatic = null;
+                return false;
+            }
+        }
+        if (!currentStatic.getCode().isEmpty()) {
+            append(currentStatic.compileLine(substep++, staticSource));
+        }
+        if (substep >= currentStatic.getCodeLength()) {
+            currentStatic = null;
+            staticSource = null;
+            substep = 0;
+        }
+        return false;
+    }
+    private boolean compileInitCode() {
+        if (moduleIterator == null) {
+            moduleIterator = compileQueue.iterator();
+        }
+        if (currentModule == null) {
+            if (!moduleIterator.hasNext()) {
+                moduleIterator = null;
+                return true;
+            }
+            currentModule = moduleIterator.next();
+        }
+        if (!currentModule.getGlsl().getInitCode().isEmpty()) {
+            append(currentModule.getGlsl().compileInitLine(substep++));
+        }
+        if (substep >= currentModule.getGlsl().getInitCode().size()) {
+            currentModule = null;
+            substep = 0;
+        }
+        return false;
+    }
+    private boolean compileMainCode() {
+        if (moduleIterator == null) {
+            moduleIterator = compileQueue.iterator();
+        }
+        if (currentModule == null) {
+            if (!moduleIterator.hasNext()) {
+                moduleIterator = null;
+                return true;
+            }
+            currentModule = moduleIterator.next();
+        }
+        if (substep < currentModule.getInputSockets().size()) {            
             // declare variables
-            var line = m.getInputSockets().get(substep++).getVariable().compileDeclaration();
+            var line = currentModule.getInputSockets().get(substep++).getVariable().compileDeclaration();
             if (line != null) append(TAB+line);
         }
-        return substep >= m.getInputSockets().size()+m.getGlsl().getMain().size();
+        else if (!currentModule.getGlsl().getMainCode().isEmpty()) {
+            // append main code
+            append(TAB+currentModule.getGlsl().compileMainLine((substep++)-currentModule.getInputSockets().size()));
+        }
+        if (substep >= currentModule.getInputSockets().size()+currentModule.getGlsl().getMainCode().size()) {
+            currentModule = null;
+            substep = 0;
+        }
+        return false;
     }
     
     // cleanup

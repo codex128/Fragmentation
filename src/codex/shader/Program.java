@@ -217,6 +217,9 @@ public class Program extends GameAppState implements CompileListener {
         var module = new Module(this, glsl, id);
         module.setLocalTranslation(position);
         if (addModule(module) && isOutput) {
+            if (!module.getOutputSockets().isEmpty()) {
+                throw new IllegalStateException("The output module cannot have output sockets!");
+            }
             output = module;
         }
     }

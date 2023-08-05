@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 /**
@@ -20,16 +21,18 @@ import java.util.stream.Stream;
 public class GLSL {
     
     private enum ParseState {
-        Def, Init, Main;
+        Def, Static, Init, Main;
     }
     
     public static final String NAME_ID = "$name";
+    private static final HashMap<String, GlslStatic> statics = new HashMap<>();
     
     private final AssetInfo info;
     private String name;
     private final ArrayList<String> init = new ArrayList<>();
     private final ArrayList<String> main = new ArrayList<>();
     private final ArrayList<GlslVar> variables = new ArrayList<>();
+    private GlslStatic staticCode;
     private ParseState state;
     
     public GLSL(AssetInfo info) throws IOException, SyntaxException {
@@ -42,6 +45,7 @@ public class GLSL {
         String line;
         state = ParseState.Def;
         while ((line = reader.readLine()) != null) {
+            if (line.isBlank()) continue;
             parse(line);
         }
         if (main.isEmpty()) {
@@ -56,7 +60,13 @@ public class GLSL {
         if (data.startsWith("//")) return;
         switch (state) {
             case Def -> {
-                if (data.startsWith("<init>")) {
+                if (data.startsWith("<static>")) {
+                    if (staticCode == null) {
+                        staticCode = addStaticIfAbsent(new GlslStatic(this));
+                    }
+                    state = ParseState.Static;
+                }
+                else if (data.startsWith("<init>")) {
                     state = ParseState.Init;
                 }
                 else if (data.startsWith("<main>")) {
@@ -70,6 +80,18 @@ public class GLSL {
                     if (name.isBlank()) {
                         name = null;
                     }
+                }
+            }
+            case Static -> {
+                if (data.startsWith("</static>")) {
+                    state = ParseState.Def;
+                    if (staticCode != null) {
+                        staticCode.close();
+                        staticCode = null;
+                    }
+                }
+                else if (staticCode != null) {
+                    staticCode.append(this, line);
                 }
             }
             case Init -> {
@@ -91,6 +113,16 @@ public class GLSL {
         }
     }
     
+    public boolean compileGenerics(int index) {
+        var v = variables.get(index);
+        if (v.isGeneric()) {
+            for (var type : variables) {
+                if (v == type) continue;
+            }
+            return true;
+        }
+        return false;
+    }
     public String compileLine(String line) {
         for (var v : variables) {
             line = v.compileUsages(line);
@@ -110,10 +142,13 @@ public class GLSL {
     public String getName() {
         return name;
     }
-    public ArrayList<String> getInit() {
+    public String getAssetName() {
+        return info.getKey().getName();
+    }
+    public ArrayList<String> getInitCode() {
         return init;
     }
-    public ArrayList<String> getMain() {
+    public ArrayList<String> getMainCode() {
         return main;
     }
     public Collection<GlslVar> getVariables() {
@@ -130,6 +165,19 @@ public class GLSL {
     }
     public Stream<GlslVar> getOutputVariables() {
         return variables.stream().filter(v -> v.isOutput());
+    }
+    
+    private static GlslStatic addStaticIfAbsent(GlslStatic gs) {
+        return (statics.putIfAbsent(gs.getId(), gs) == null ? gs : null);
+    }
+    public static GlslStatic getStaticGlsl(String key) {
+        return statics.get(key);
+    }
+    public static boolean removeStaticGlsl(GlslStatic gs) {
+        return statics.remove(gs.getId(), gs);
+    }
+    public static Collection<GlslStatic> getStaticGlsl() {
+        return statics.values();
     }
     
 }
