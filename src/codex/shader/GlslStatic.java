@@ -18,6 +18,7 @@ public class GlslStatic {
     
     public GlslStatic(GLSL source) {
         this.id = source.getAssetName();
+        this.source = source;
     }
     
     public boolean append(GLSL source, String line) {

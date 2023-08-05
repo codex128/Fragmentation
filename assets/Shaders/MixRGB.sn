@@ -1,6 +1,6 @@
 $name MixRGB
 
-@input int mode 0:Mix,Add,Subtract,Multiply,Divide,Darken,Lighten
+@input state mode 0:Mix,Add,Subtract,Multiply,Divide,Darken,Lighten
 @input float factor 0.5
 @input vec4 color1 0.5,0.5,0.5,1.0
 @input vec4 color2 0.5,0.5,0.5,1.0
@@ -9,9 +9,6 @@ $name MixRGB
 
 @output vec4 result
 
-// Code in static is shared among all instances of this shader node,
-// which makes it ideal for declaring functions and structs.
-// It is compiled outside the main method.
 <static>
 
 vec4 mix(int m, float f, vec4 c1, vec4 c2) {

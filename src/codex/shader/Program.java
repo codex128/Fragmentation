@@ -168,7 +168,6 @@ public class Program extends GameAppState implements CompileListener {
         if (!file.getName().endsWith(".frag")) {
             throw new IllegalArgumentException("Only exports to .frag files!");
         }
-        System.out.println("begin compiling");
         var compiler = new Compiler(this);
         compiler.addListener(new CompileListener() {
             @Override

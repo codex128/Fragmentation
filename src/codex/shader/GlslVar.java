@@ -124,7 +124,7 @@ public class GlslVar {
         return function.equals(OUTPUT);
     }
     public boolean isGeneric() {
-        return type.startsWith("<") && type.endsWith(">");
+        return !isLocal() && type.startsWith("<") && type.endsWith(">");
     }
     
     public static GlslVar parse(String source) throws SyntaxException {
