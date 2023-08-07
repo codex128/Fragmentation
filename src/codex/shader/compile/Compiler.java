@@ -11,6 +11,7 @@ import codex.shader.Module;
 import codex.shader.Program;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -20,26 +21,27 @@ import java.util.LinkedList;
  */
 public class Compiler implements Runnable, Listenable<CompileListener> {
     
-    private static final String PREFIX = "f";
+    private static final String PREFIX = "gv_";
     private static final String[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     private static final String TAB = "    ";
     
     private final static String[] STEPS = {"resources", "generics", "verify-generics", "inits", "statics", "main"};
     
     private final Program program;
-    private int state = 0;
+    private final LinkedList<CompileListener> listeners = new LinkedList<>();
     private final LinkedList<Module> compileQueue = new LinkedList<>();
     private final ArrayList<String> compiledCode = new ArrayList<>();
+    private final HashSet<String> resources = new HashSet<>();
     private Iterator<Module> moduleIterator;
     private Iterator<StaticGlsl> staticIterator;
     private Module currentModule;
     private GLSL staticSource;
     private StaticGlsl currentStatic;
+    private int state = 0;
     private int substep = 0;
     private int nextNameIndex = 0;
     private int nameIteration = 0;
     private CompilingError error;
-    private LinkedList<CompileListener> listeners = new LinkedList<>();
     
     public Compiler(Program program) {
         this.program = program;
@@ -178,7 +180,12 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     private boolean compileResources() {
         if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getResources().isEmpty()) {
-            append(currentModule.getGlsl().compileResources(substep++));
+            var res = currentModule.getGlsl().getResources().get(substep).getResource();
+            if (!resources.contains(res)) {
+                resources.add(res);
+                append(currentModule.getGlsl().compileResources(substep));
+            }
+            substep++;
         }
         if (substep >= currentModule.getGlsl().getResources().size()) {
             currentModule = null;
@@ -300,6 +307,10 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     
     // cleanup
     private void cleanupModules() {
+        moduleIterator = null;
+        staticIterator = null;
+        compileQueue.clear();
+        resources.clear();
         for (var m : program.getModules()) {
             for (var v : m.getGlsl().getVariables()) {
                 v.setCompilerName(null);
