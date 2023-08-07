@@ -27,6 +27,7 @@ public class StateArgument extends StringArgument {
     private void initGui() {
         field = new TextField("");
         addChild(field);
+        reference = field.getDocumentModel().createReference();
     }
     private void initStates() {
         int seperator = socket.getVariable().getDefault().indexOf(':');

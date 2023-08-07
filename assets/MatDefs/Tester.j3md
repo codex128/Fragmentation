@@ -1,0 +1,12 @@
+MaterialDef Simple {
+    MaterialParameters {
+        Color Vec4
+    }
+    Technique {
+        VertexShader GLSL120:   MatDefs/tester.vert
+        FragmentShader GLSL120: MatDefs/export.frag
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+    }
+}

@@ -23,6 +23,7 @@ public class FloatArgument extends Argument {
     private void initGui() {
         field = new TextField(new NumberDocumentModel());
         addChild(field);
+        reference = field.getDocumentModel().createReference();
     }
     
     @Override

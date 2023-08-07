@@ -12,19 +12,19 @@ $name Checker Texture
 
 <static>
 
+bool isEven(int n) {
+    return mod(n, 2) < 1;
+}
 vec4 checker(vec2 uv, vec4 c1, vec4 c2, float s) {
     uv *= s;
-    bool x = isEven(floor(uv.x));
-    bool y = isEven(floor(uv.y));
+    bool x = isEven(int(floor(uv.x)));
+    bool y = isEven(int(floor(uv.y)));
     if (x == y) {
         return c1;
     }
     else {
         return c2;
     }
-}
-bool isEven(int n) {
-    return mod(n, 2) < 1;
 }
 
 </static>

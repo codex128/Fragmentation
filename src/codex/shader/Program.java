@@ -28,10 +28,8 @@ import com.simsilica.lemur.FillMode;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.ListBox;
-import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.component.BoxLayout;
 import com.simsilica.lemur.component.QuadBackgroundComponent;
-import com.simsilica.lemur.core.VersionedList;
 import com.simsilica.lemur.event.CursorButtonEvent;
 import com.simsilica.lemur.event.CursorEventControl;
 import com.simsilica.lemur.event.CursorListener;
@@ -394,8 +392,7 @@ public class Program extends GameAppState {
     public class KeyHandler implements KeyListener {   
         @Override
         public void onKeyEvent(KeyInputEvent evt) {
-            if (selected != null && evt.isPressed()
-                    && (evt.getKeyCode() == KeyInput.KEY_X || evt.getKeyCode() == KeyInput.KEY_DELETE)) {
+            if (selected != null && evt.isPressed() && evt.getKeyCode() == KeyInput.KEY_DELETE) {
                 selected.terminate();
                 selected = null;
             }

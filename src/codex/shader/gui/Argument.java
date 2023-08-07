@@ -8,6 +8,7 @@ import codex.shader.GlslVar;
 import codex.shader.InputSocket;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.component.BoxLayout;
+import com.simsilica.lemur.core.VersionedReference;
 import com.simsilica.lemur.style.ElementId;
 
 /**
@@ -19,6 +20,7 @@ public abstract class Argument extends Container {
     
     public static final String ELEMENT_ID = "argument";
     protected final InputSocket socket;
+    protected VersionedReference reference;
     
     public Argument(InputSocket socket) {
         super(new ElementId(ELEMENT_ID));
@@ -35,6 +37,10 @@ public abstract class Argument extends Container {
     public abstract String getDefaultValue();
     public void compile(GlslVar var) {
         var.setDefault(getDefaultValue());
+    }    
+    
+    public VersionedReference getReference() {
+        return reference;
     }
     
     public static Argument create(InputSocket socket) {

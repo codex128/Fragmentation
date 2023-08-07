@@ -14,8 +14,8 @@ Random.sn
 Rectangle.sn
 SeperateXYZW.sn
 Step.sn
-TexCoord.sn
 Texture2D.sn
 Trigonometry.sn
 Uniform.sn
+Varying.sn
 WaveTexture.sn

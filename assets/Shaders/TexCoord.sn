@@ -3,8 +3,8 @@ $name Texture Coordinate
 @input int index 0
 @output vec2 coordinate
 
-<main>
+<init>
 
 vec2 coordinate = vec2(gl_TexCoord[index].xy);
 
-</main>
+</init>

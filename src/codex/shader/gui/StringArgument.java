@@ -23,6 +23,7 @@ public class StringArgument extends Argument {
     private void initGui() {
         field = new TextField("");
         addChild(field);
+        reference = field.getDocumentModel().createReference();
     }
 
     @Override

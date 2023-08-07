@@ -6,7 +6,7 @@ $name Math
 
 @local math
 
-@input float result
+@output float result
 
 <static>
 

@@ -24,7 +24,7 @@ public class InputSocket extends Socket {
     }    
     
     private boolean createArgument() {
-        if (argument != null && variable.getDefault() != null) {
+        if (argument != null || variable.getDefault() == null) {
             return false;
         }
         argument = Argument.create(this);
@@ -47,6 +47,12 @@ public class InputSocket extends Socket {
         variable.setDefault(def);
         createArgument();
         argument.displayValue(def);
+    }
+    @Override
+    public void updateLogicalState(float tpf) {
+        if (argument != null && argument.getReference().update()) {
+            variable.setDefault(argument.getDefaultValue());
+        }
     }
     
     public Connection getConnection() {
