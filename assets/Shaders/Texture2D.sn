@@ -1,0 +1,12 @@
+$name Texture2D
+
+@input sampler2D texture
+@input vec2 texCoord
+
+@output vec4 color
+
+<main>
+
+vec4 color = texture2D(texture, texCoord);
+
+</main>

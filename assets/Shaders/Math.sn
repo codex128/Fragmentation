@@ -1,0 +1,33 @@
+$name Math
+
+@input state function 0:Add,Subtract,Multiply,Divide,Absolute,Fraction,Floor,Ceil,Modulus,Power,Square Root,Maximum,Minimum
+@input float value1 1.0
+@input float value2 1.0
+
+@local math
+
+@input float result
+
+<static>
+
+float math(int f, float a, float b) {
+    if (f == 0) return a+b;
+    if (f == 1) return a-b;
+    if (f == 2) return a*b;
+    if (f == 3) return b == 0 ? 0 : a/b;
+    if (f == 4) return abs(a);
+    if (f == 5) return fract(a);
+    if (f == 6) return ceil(a);
+    if (f == 7) return mod(a, b);
+    if (f == 8) return pow(a, b);
+    if (f == 9) return sqrt(a);
+    if (f == 10) return max(a, b);
+    if (f == 11) return min(a, b);
+}
+
+</static>
+<main>
+
+float result = math(state, value1, value2);
+
+</main>

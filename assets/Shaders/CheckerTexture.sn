@@ -1,0 +1,35 @@
+$name Checker Texture
+
+@input vec2 vector 0.0,0.0
+@input vec4 color1 0.0,0.0,0.0,1.0
+@input vec4 color2 1.0,1.0,1.0,1.0
+@input float scale 5.0
+
+@local checker
+@local isEven
+
+@output vec4 color
+
+<static>
+
+vec4 checker(vec2 uv, vec4 c1, vec4 c2, float s) {
+    uv *= s;
+    bool x = isEven(floor(uv.x));
+    bool y = isEven(floor(uv.y));
+    if (x == y) {
+        return c1;
+    }
+    else {
+        return c2;
+    }
+}
+bool isEven(int n) {
+    return mod(n, 2) < 1;
+}
+
+</static>
+<main>
+
+vec4 color = checker(vector, color1, color2, scale);
+
+</main>

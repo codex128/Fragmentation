@@ -1,0 +1,11 @@
+$name Brick Texture
+
+@input vec2 vector 0.0,0.0
+@input float scale 5.0
+@input vec2 size 1.0,0.5
+@input vec4 brick1 0.7,0.2,0.2,1.0
+@input vec4 brick2 0.8,0.3,0.3,1.0
+@input vec4 mortar 0.5,0.5,0.5,1.0
+
+@output vec4 color
+@output float factor

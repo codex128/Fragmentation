@@ -1,0 +1,22 @@
+$name Trigonometry.sn
+
+@input state function 0:Sine,Cosine,Tangent,Arc Sine,Arc Cosine,Radians,Degrees
+@input float value 1.0
+
+@local trig
+
+@output float value
+
+<static>
+
+float trig(float f, float a) {
+    if (f == 0) return sin(a);
+    if (f == 1) return cos(a);
+    if (f == 2) return tan(a);
+    if (f == 3) return asin(a);
+    if (f == 4) return acos(a);
+    if (f == 5) return radians(a);
+    if (f == 6) return degrees(a);
+}
+
+</static>

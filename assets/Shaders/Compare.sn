@@ -1,0 +1,24 @@
+$name Compare
+
+@input state function 0:Greater Than,Less Than,Equal
+@input float value1 1.0
+@input float value2 1.0
+
+@local compare
+
+@output float result
+
+<static>
+
+float compare(int f, float a, float b) {
+    if (f == 0) return a > b ? 1.0 : 0.0;
+    if (f == 1) return a < b ? 1.0 : 0.0;
+    if (f == 2) return a == b ? 1.0 : 0.0;
+}
+
+</static>
+<main>
+
+float result = compare(function, value1, value2);
+
+</main>

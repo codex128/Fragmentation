@@ -1,0 +1,27 @@
+$name Rectangle
+
+@input vec2 vector 0.0,0.0
+@input vec2 origin 0.0,0.0
+@input vec2 size 1.0,1.0
+
+@local rect
+
+@output float factor
+
+<static>
+
+float rect(vec2 uv, vec2 p, vec2 s) {
+    if (uv.x >= p.x && uv.x <= p.x+s.x && uv.y >= p.y && uv.y <= p.y+s.y) {
+        return 1.0;
+    }
+    else {
+        return 0.0;
+    }
+}
+
+</static>
+<main>
+
+float factor = rect(vector, origin, size);
+
+</main>

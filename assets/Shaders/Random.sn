@@ -1,0 +1,20 @@
+$name Random
+
+@input float seed 34.39728
+@input float min 0.0
+@input float max 1.0
+
+@output float result
+
+<static>
+
+float rand(float s) {
+    return fract(sin(s) * 13052.74161;
+}
+
+</static>
+<main>
+
+float result = rand(seed) * (max - min) + min;
+
+</main>

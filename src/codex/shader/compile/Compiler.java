@@ -6,7 +6,7 @@ package codex.shader.compile;
 
 import codex.boost.Listenable;
 import codex.shader.GLSL;
-import codex.shader.GlslStatic;
+import codex.shader.StaticGlsl;
 import codex.shader.Module;
 import codex.shader.Program;
 import java.util.ArrayList;
@@ -24,22 +24,17 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     private static final String[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     private static final String TAB = "    ";
     
-    private final static int
-            GENERICS = 0,
-            VERIFY_GEN = GENERICS+1,
-            INITS = VERIFY_GEN+1,
-            STATICS = INITS+1,
-            MAIN = STATICS+1;
+    private final static String[] STEPS = {"resources", "generics", "verify-generics", "inits", "statics", "main"};
     
     private final Program program;
     private int state = 0;
     private final LinkedList<Module> compileQueue = new LinkedList<>();
     private final ArrayList<String> compiledCode = new ArrayList<>();
     private Iterator<Module> moduleIterator;
-    private Iterator<GlslStatic> staticIterator;
+    private Iterator<StaticGlsl> staticIterator;
     private Module currentModule;
     private GLSL staticSource;
-    private GlslStatic currentStatic;
+    private StaticGlsl currentStatic;
     private int substep = 0;
     private int nextNameIndex = 0;
     private int nameIteration = 0;
@@ -151,11 +146,11 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         if (runCompileStep(state)) {
             currentModule = null;
             substep = 0;
-            switch (state) {
-                case STATICS -> {
+            switch (STEPS[state]) {
+                case "statics" -> {
                     append("void main() {");
                 }
-                case MAIN -> {
+                case "main" -> {
                     append("}");
                     return true;
                 }
@@ -166,18 +161,30 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean runCompileStep(int step) {
-        return switch (step) {
-            case GENERICS   -> compileGenerics();
-            case VERIFY_GEN -> verifyGenerics();
-            case INITS      -> compileInitCode();
-            case STATICS    -> compileStaticCode();
-            case MAIN       -> compileMainCode();
-            default         -> true;
+        return switch (STEPS[step]) {
+            case "resources"        -> compileResources();
+            case "generics"         -> compileGenerics();
+            case "verify-generics"  -> verifyGenerics();
+            case "inits"            -> compileInitCode();
+            case "statics"          -> compileStaticCode();
+            case "main"             -> compileMainCode();
+            default                 -> true;
         };
     }
     private void append(String line) {
         System.out.println(line);
         compiledCode.add(line);
+    }
+    private boolean compileResources() {
+        if (fetchNextModule()) return true;
+        if (!currentModule.getGlsl().getResources().isEmpty()) {
+            append(currentModule.getGlsl().compileResources(substep++));
+        }
+        if (substep >= currentModule.getGlsl().getResources().size()) {
+            currentModule = null;
+            substep = 0;
+        }
+        return false;
     }
     private boolean compileGenerics() {
         if (moduleIterator == null) {
@@ -219,16 +226,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return true;
     }
     private boolean compileInitCode() {
-        if (moduleIterator == null) {
-            moduleIterator = compileQueue.iterator();
-        }
-        if (currentModule == null) {
-            if (!moduleIterator.hasNext()) {
-                moduleIterator = null;
-                return true;
-            }
-            currentModule = moduleIterator.next();
-        }
+        if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getInitCode().isEmpty()) {
             append(currentModule.getGlsl().compileInitLine(substep++));
         }
@@ -270,16 +268,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileMainCode() {
-        if (moduleIterator == null) {
-            moduleIterator = compileQueue.iterator();
-        }
-        if (currentModule == null) {
-            if (!moduleIterator.hasNext()) {
-                moduleIterator = null;
-                return true;
-            }
-            currentModule = moduleIterator.next();
-        }
+        if (fetchNextModule()) return true;
         if (substep < currentModule.getInputSockets().size()) {            
             // declare variables
             var line = currentModule.getInputSockets().get(substep++).getVariable().compileDeclaration();
@@ -292,6 +281,19 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         if (substep >= currentModule.getInputSockets().size()+currentModule.getGlsl().getMainCode().size()) {
             currentModule = null;
             substep = 0;
+        }
+        return false;
+    }
+    private boolean fetchNextModule() {
+        if (moduleIterator == null) {
+            moduleIterator = compileQueue.iterator();
+        }
+        if (currentModule == null) {
+            if (!moduleIterator.hasNext()) {
+                moduleIterator = null;
+                return true;
+            }
+            currentModule = moduleIterator.next();
         }
         return false;
     }

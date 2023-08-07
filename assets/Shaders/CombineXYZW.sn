@@ -1,0 +1,14 @@
+$name Combine XYZW
+
+@input float x 0.0
+@input float y 0.0
+@input float z 0.0
+@input float w 0.0
+
+@output vec4 vector
+
+<main>
+
+vec4 vector = vec4(x, y, z, w);
+
+</main>

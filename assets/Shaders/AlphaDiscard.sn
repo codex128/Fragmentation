@@ -1,0 +1,12 @@
+$name Alpha Discard
+
+@input float alpha 1.0
+@input float threshold 0.1
+
+<main>
+
+if (alpha < threshold) {
+    discard;
+}
+
+</main>

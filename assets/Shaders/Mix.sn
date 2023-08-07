@@ -1,0 +1,14 @@
+$name Mix
+
+@input generic varTypes vec4
+@input float factor 0.5
+@input <varTypes> value1
+@input <varTypes> value2
+
+@output <varTypes> result
+
+<main>
+
+<varTypes> result = mix(value1, value2, factor);
+
+</main>

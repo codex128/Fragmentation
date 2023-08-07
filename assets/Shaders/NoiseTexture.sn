@@ -1,0 +1,35 @@
+$name Noise Texture
+
+#include FastNoiseLite.glsl https://github.com/Auburn/FastNoiseLite
+
+@input vec2 vector 0.0,0.0
+@input float scale 5.0
+
+@local rand2D
+@local noise2D
+
+@output float value
+
+<static>
+
+float rand2D(vec2 uv) {
+    return return fract(sin(dot(uv.xy, vec2(14.3423, 76.8593))) * 41852.5463133);
+}
+float noise2D(vec2 uv, float s) {
+    uv *= s;
+    vec2 i = floor(uv);
+    vec2 f = fract(uv);
+    float a = rand2D(i);
+    float b = rand2D(i + vec2(1.0, 0.0));
+    float c = rand2D(i + vec2(0.0, 1.0));
+    float d = rand2D(i + vec2(1.0, 1.0));
+    vec2 u = f*f*(3.0-2.0*f);
+    return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+</static>
+<main>
+
+float value = noise2D(vector, scale);
+
+</main>

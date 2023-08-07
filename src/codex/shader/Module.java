@@ -4,11 +4,15 @@
  */
 package codex.shader;
 
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.input.event.MouseMotionEvent;
+import com.jme3.scene.Spatial;
 import com.simsilica.lemur.Axis;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.FillMode;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.component.BoxLayout;
+import com.simsilica.lemur.event.MouseListener;
 import com.simsilica.lemur.style.ElementId;
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -17,7 +21,7 @@ import java.util.function.Consumer;
  *
  * @author codex
  */
-public class Module extends Container {
+public class Module extends Container implements MouseListener {
     
     private static long nextId = 0;
     
@@ -53,6 +57,15 @@ public class Module extends Container {
             addChild(s);
         }
     }
+
+    @Override
+    public void mouseButtonEvent(MouseButtonEvent event, Spatial target, Spatial capture) {}
+    @Override
+    public void mouseEntered(MouseMotionEvent event, Spatial target, Spatial capture) {}
+    @Override
+    public void mouseExited(MouseMotionEvent event, Spatial target, Spatial capture) {}
+    @Override
+    public void mouseMoved(MouseMotionEvent event, Spatial target, Spatial capture) {}
     
     public void terminate() {
         inputs.stream().forEach(s -> s.terminate());

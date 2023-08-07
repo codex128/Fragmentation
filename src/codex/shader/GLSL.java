@@ -24,15 +24,16 @@ public class GLSL {
         Def, Static, Init, Main;
     }
     
-    public static final String NAME_ID = "$name";
-    private static final HashMap<String, GlslStatic> statics = new HashMap<>();
+    public static final String NAME_ID = "$name", INCLUDE_ID = "#include";
+    private static final HashMap<String, StaticGlsl> statics = new HashMap<>();
     
     private final AssetInfo info;
     private String name;
+    private final ArrayList<Resource> resources = new ArrayList<>();
     private final ArrayList<String> init = new ArrayList<>();
     private final ArrayList<String> main = new ArrayList<>();
     private final ArrayList<GlslVar> variables = new ArrayList<>();
-    private GlslStatic staticCode;
+    private StaticGlsl staticCode;
     private ParseState state;
     
     public GLSL(AssetInfo info) throws IOException, SyntaxException {
@@ -59,7 +60,7 @@ public class GLSL {
             case Def -> {
                 if (data.startsWith("<static>")) {
                     if (staticCode == null) {
-                        staticCode = addStaticIfAbsent(new GlslStatic(this));
+                        staticCode = addStaticIfAbsent(new StaticGlsl(this));
                     }
                     state = ParseState.Static;
                 }
@@ -77,6 +78,14 @@ public class GLSL {
                     if (name.isBlank()) {
                         name = null;
                     }
+                }
+                else if (data.startsWith(INCLUDE_ID+" ")) {
+                    var args = data.substring(INCLUDE_ID.length()+1).split(" ", 2);
+                    var res = new Resource(args[0]);
+                    if (args.length > 1) {
+                        res.setHyperlink(args[1]);
+                    }
+                    resources.add(res);
                 }
             }
             case Static -> {
@@ -110,6 +119,10 @@ public class GLSL {
         }
     }
     
+    public String compileResources(int index) {
+        var res = resources.get(index);
+        return "#include \""+res.getResource()+"\"";
+    }
     public boolean compileGenerics(int index) {
         var v = variables.get(index);
         if (v.isGeneric()) {
@@ -145,6 +158,9 @@ public class GLSL {
     public String getAssetName() {
         return info.getKey().getName();
     }
+    public ArrayList<Resource> getResources() {
+        return resources;
+    }
     public ArrayList<String> getInitCode() {
         return init;
     }
@@ -167,16 +183,16 @@ public class GLSL {
         return variables.stream().filter(v -> v.isOutput());
     }
     
-    private static GlslStatic addStaticIfAbsent(GlslStatic gs) {
-        return (statics.putIfAbsent(gs.getId(), gs) == null ? gs : null);
+    private static StaticGlsl addStaticIfAbsent(StaticGlsl sg) {
+        return (statics.putIfAbsent(sg.getId(), sg) == null ? sg : null);
     }
-    public static GlslStatic getStaticGlsl(String key) {
+    public static StaticGlsl getStaticGlsl(String key) {
         return statics.get(key);
     }
-    public static boolean removeStaticGlsl(GlslStatic gs) {
-        return statics.remove(gs.getId(), gs);
+    public static boolean removeStaticGlsl(StaticGlsl sg) {
+        return statics.remove(sg.getId(), sg);
     }
-    public static Collection<GlslStatic> getStaticGlsl() {
+    public static Collection<StaticGlsl> getStaticGlsl() {
         return statics.values();
     }
     

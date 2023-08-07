@@ -1,0 +1,12 @@
+$name Step
+
+@input float edge 0.0
+@input float value 0.0
+
+@output float result
+
+<main>
+
+float result = step(edge, value);
+
+</main>

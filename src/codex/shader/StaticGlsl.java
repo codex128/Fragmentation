@@ -10,13 +10,13 @@ import java.util.ArrayList;
  *
  * @author codex
  */
-public class GlslStatic {
+public class StaticGlsl {
     
     private final String id;
     private final ArrayList<String> code = new ArrayList<>();
     private GLSL source;
     
-    public GlslStatic(GLSL source) {
+    public StaticGlsl(GLSL source) {
         this.id = source.getAssetName();
         this.source = source;
     }
