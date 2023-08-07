@@ -20,22 +20,35 @@ public class InputSocket extends Socket {
     public InputSocket(Module module, GlslVar var) {
         super(module, var, Socket.IO.Input, new ElementId(Socket.ELEMENT_ID).child(ELEMENT_ID));
         validate(var);
-        if (var.getDefault() != null) {
-            argument = Argument.create(this);
-        }
+        createArgument();
     }    
+    
+    private boolean createArgument() {
+        if (argument != null && variable.getDefault() != null) {
+            return false;
+        }
+        argument = Argument.create(this);
+        return true;
+    }
     
     @Override
     public void initGui() {
         layout.addChild(0, 0, hub);
         layout.addChild(0, 1, new Label(variable.getName()));
         layout.addChild(0, 2, argument);
-    }
-    
+    }    
     @Override
     public boolean acceptConnectionTo(Socket socket) {
         return super.acceptConnectionTo(socket) && connections.isEmpty();
     }
+    @Override
+    public void setVariableDefault(String def) {
+        assert def != null;
+        variable.setDefault(def);
+        createArgument();
+        argument.displayValue(def);
+    }
+    
     public Connection getConnection() {
         return !connections.isEmpty() ? connections.get(0) : null;
     }

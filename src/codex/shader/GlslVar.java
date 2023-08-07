@@ -129,7 +129,7 @@ public class GlslVar {
     
     public static GlslVar parse(String source) throws SyntaxException {
         String[] args = source.split(" ", 4);
-        String function, type = null, name = null, def = null, defProp = null;
+        String function, type = null, name = null, def = null;
         function = args[0];
         switch (function) {
             case INPUT -> {
@@ -137,14 +137,7 @@ public class GlslVar {
                 type = args[1];
                 name = args[2];
                 if (args.length > 3) {
-                    var defInit = args[3].split("&", 2);
-                    def = defInit[0].trim();
-                    if (defInit.length > 1) {
-                        defProp = defInit[1].trim();
-                        if (defProp.isBlank()) {
-                            defProp = null;
-                        }
-                    }
+                    def = args[3];
                 }
             }
             case LOCAL -> {
@@ -159,25 +152,24 @@ public class GlslVar {
             default -> throw new SyntaxException("Unknown identifier \""+function+"\"!");
         }
         if (name == null) {
-            throw new NullPointerException("Variable name is null!");
+            throw new NullPointerException("Variable name cannot be null!");
         }
         if (!Character.isLetter(name.charAt(0))) {
             throw new SyntaxException("Variable name cannot begin with '"+name.charAt(0)+"'!");
         }
         GlslVar var;
-        if ("generic".equals(type)) {
-            var = new GenericVar();
-        }
-        else if ("String".equals(type)) {
-            var = new StringVar();
-        }
-        else {
+        if (null == type) {
             var = new GlslVar();
         }
-        if (function != null)   var.function = function;
-        if (type != null)       var.type = type;
-        if (def != null)        var.def = def;
+        else var = switch (type) {
+            case "generic" ->   new GenericVar();
+            case "String" ->    new StringVar();
+            default ->          new GlslVar();
+        };
+        var.function = function;
         var.name = name;
+        if (type != null) var.type = type;
+        if (def != null) var.def = def;
         return var;
     }
     private static void validate(String[] args, int length) throws SyntaxException {

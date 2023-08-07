@@ -118,6 +118,13 @@ public class GLSL {
             }
         }
     }
+    public void applyDefault(String[] def) {
+        assert def.length == 2;
+        if (def[0].isBlank()) return;
+        var variable = variables.stream().filter(v -> v.getName().equals(def[0])).findAny().orElse(null);
+        if (variable == null) return;
+        variable.setDefault(def[1]);
+    }
     
     public String compileResources(int index) {
         var res = resources.get(index);

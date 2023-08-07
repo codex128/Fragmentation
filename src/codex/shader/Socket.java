@@ -83,6 +83,9 @@ public abstract class Socket extends Container {
         }
         list.clear();
     }
+    public void setVariableDefault(String def) {
+        variable.setDefault(def);
+    }
     
     public IO getType() {
         return type;

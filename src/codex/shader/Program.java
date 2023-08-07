@@ -140,6 +140,10 @@ public class Program extends GameAppState implements CompileListener {
                 writer.write("\nmodule{id="+m.getId()+";"
                         +"glsl="+m.getGlsl().getAssetInfo().getKey().getName()+";"
                         +"position="+((int)m.getLocalTranslation().x)+","+((int)m.getLocalTranslation().y));
+                for (var s : m.getInputSockets()) {
+                    if (s.getVariable().getDefault() == null) continue;
+                    writer.write(";def-"+s.getVariable().getName()+"="+s.getVariable().getDefault());
+                }
                 if (m == output) {
                     writer.write(";isOutput=true");
                 }
@@ -197,6 +201,7 @@ public class Program extends GameAppState implements CompileListener {
         String glslPath = null;
         var position = new Vector3f();
         var isOutput = false;
+        var defaults = new ArrayList<String[]>();
         for (var arg : args) {
             var a = arg.split("=", 2);
             switch (a[0]) {
@@ -204,6 +209,11 @@ public class Program extends GameAppState implements CompileListener {
                 case "glsl" -> glslPath = a[1];
                 case "position" -> position = parseGuiPositionVector(a[1]);
                 case "isOutput" -> isOutput = Boolean.parseBoolean(a[1]);
+                default -> {
+                    if (a[0].startsWith("def-")) {
+                        defaults.add(a);
+                    }
+                }
             }
         }
         if (id < 0) {
@@ -215,6 +225,10 @@ public class Program extends GameAppState implements CompileListener {
         var glsl = (GLSL)assetManager.loadAsset(glslPath);
         var module = new Module(this, glsl, id);
         module.setLocalTranslation(position);
+        for (var def : defaults) {
+            def[0] = def[0].substring(5);
+            module.getGlsl().applyDefault(def);
+        }
         if (addModule(module) && isOutput) {
             if (!module.getOutputSockets().isEmpty()) {
                 throw new IllegalStateException("The output module cannot have output sockets!");

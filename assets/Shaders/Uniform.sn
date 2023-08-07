@@ -1,4 +1,6 @@
 $name Uniform
+$description Creates a uniform
+$catagory I/O
 
 @input generic type vec4
 @input String name m_Vec4
