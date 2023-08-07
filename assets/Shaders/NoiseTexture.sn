@@ -1,7 +1,5 @@
 $name Noise Texture
 
-#include FastNoiseLite.glsl https://github.com/Auburn/FastNoiseLite
-
 @input vec2 vector 0.0,0.0
 @input float scale 5.0
 

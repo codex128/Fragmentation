@@ -86,57 +86,57 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         }
     }
     private void queueModules() {
-        var stack = new LinkedList<Module>();
-        // do the output module first, which is guaranteed to have no modules depending on it
-        stack.add(program.getOutputModule());
-        while (!stack.isEmpty()) {
-            var current = stack.getLast();
-            var independent = true;
-            // check if the module depends on an unqueued module
-            for (var socket : current.getInputSockets()) {
-                // check if this input socket is connected to anything
-                if (socket.getConnection() == null) {
-                    // if there is an argument, compile the argument
-                    if (socket.getArgument() != null) {
-                        socket.getArgument().compile(socket.getVariable());
-                    }
-                    else if (socket.getVariable().getDefault() == null) {
-                        // compiling must be stopped because a required socket was not connected to anything
-                        error = new CompilingError("Socket \""+socket.getName()+"\" must be connected!");
-                        return;
-                    }
-                    continue;
-                }
-                // since the input variable is connected to an output variable, set the output as the input's source
-                if (socket.getVariable().getCompilerSource() == null) {
-                    socket.getVariable().setCompilerSource(socket.getConnection().getOutputSocket().getVariable());
-                    if (!socket.varTypeCompatible(socket.getConnection().getOutputSocket())) {
-                        // cannot continue compiling because two sockets are connected illegally
-                        error = new CompilingError(socket.getVariable().getType()+" cannot be cast to "+socket.getVariable().getCompilerSource().getType());
-                        return;
-                    }
-                }
-                // we can check if it's unqueued by the source variable compiler name
-                if (socket.getVariable().getCompilerSource().getCompilerName() == null) {
-                    independent = false;
-                    // append the dependency module to the stack
-                    if (!stack.contains(socket.getConnection().getOutputSocket().getModule())) {
-                        stack.addLast(socket.getConnection().getOutputSocket().getModule());
-                    }
-                }
+        program.getOutputModule().setCompileLayer(0);
+        // this should configure all the compile layers correctly
+        int max = bump(program.getOutputModule(), 0);
+        // sort by compile layer
+        var table = new ArrayList<LinkedList<Module>>();
+        for (int i = 0; i <= max; i++) {
+            table.add(new LinkedList<>());
+        }
+        for (var m : program.getModules()) {
+            if (m.getCompileLayer() > max) {
+                throw new IllegalStateException("Compile layer does not exist ("+m.getCompileLayer()+")!");
             }
-            if (independent) {
-                // all output variables will need a unique name
-                // this is important to do now, because we use the compiler name state for queueing
-                current.getGlsl().getOutputVariables().forEach(v -> {
-                    v.setCompilerName(generateNextName());
-                });
-                // append to the compile queue
-                compileQueue.addLast(current);
-                // since a module is only independent if it doesn't add anything, we can use removeLast
-                stack.removeLast();
+            if (m.getCompileLayer() < 0) continue;
+            table.get(m.getCompileLayer()).add(m);
+        }
+        // now that it's sorted, just pop them into the compile queue in order
+        for (var l : table) {
+            for (var m : l) {
+                compileQueue.addFirst(m);
+            }
+            l.clear();
+        }
+        table.clear();
+    }
+    private int bump(Module module, int max) {
+        for (var s : module.getInputSockets()) {
+            // generate a unique name for this variable
+            if (s.getVariable().getCompilerName() == null) {
+                s.getVariable().setCompilerName(generateNextName());
+            }
+            // if this has no connections, there is no need to do further calculations
+            if (s.getNumConnections() == 0) continue;
+            // set the compiler source variable
+            if (s.getVariable().getCompileSource() == null) {
+                s.getVariable().setCompileSource(s.getConnection().getOutputSocket().getVariable());
+            }
+            // check if an input module is lower than this module
+            var m = s.getConnection().getOutputSocket().getModule();
+            if (m.getCompileLayer() <= module.getCompileLayer()) {
+                // bump up the input module and it's input modules
+                m.setCompileLayer(module.getCompileLayer()+1);
+                int i = bump(m, m.getCompileLayer() > max ? m.getCompileLayer() : max);
+                // save the maximum layer
+                if (i > max) {
+                    max = i;
+                }
+                // If the modules are connected in a loop (illegal), then the max layer should should take off into space.
+                // Unfortunately, there is no good way to stop this before it happens.
             }
         }
+        return max;
     }
     private String generateNextName() {
         if (nextNameIndex >= letters.length) {
@@ -238,8 +238,8 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         System.out.println("verify generics");
         for (var m : compileQueue) {
             for (var s : m.getInputSockets()) {
-                if (s.getConnection() != null && !s.varTypeMatch(s.getConnection().getOutputSocket())) {
-                    error = new CompilingError(s.getVariable().getCompilerSource().getType()+" cannot be cast to "+s.getVariable().getType());
+                if (s.getNumConnections() != 0 && !s.varTypeMatch(s.getConnection().getOutputSocket())) {
+                    error = new CompilingError(s.getVariable().getCompileSource().getType()+" cannot be cast to "+s.getVariable().getType());
                     return false;
                 }
             }
@@ -335,9 +335,10 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         compileQueue.clear();
         resources.clear();
         for (var m : program.getModules()) {
+            m.setCompileLayer(-1);
             for (var v : m.getGlsl().getVariables()) {
                 v.setCompilerName(null);
-                v.setCompilerSource(null);
+                v.setCompileSource(null);
             }
         }
     }

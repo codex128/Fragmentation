@@ -35,6 +35,7 @@ public class Module extends Container implements MouseListener {
     private final ArrayList<InputSocket> inputs = new ArrayList<>();
     private final ArrayList<OutputSocket> outputs = new ArrayList<>();
     private Vector3f drag;
+    private int compileLayer = -1;
     
     public Module(Program program, GLSL glsl) {
         this(program, glsl, nextId++);
@@ -125,6 +126,10 @@ public class Module extends Container implements MouseListener {
         return null;
     }
     
+    public void setCompileLayer(int layer) {
+        compileLayer = layer;
+    }
+    
     public long getId() {
         return id;
     }
@@ -139,6 +144,9 @@ public class Module extends Container implements MouseListener {
     }
     public ArrayList<OutputSocket> getOutputSockets() {
         return outputs;
+    }
+    public int getCompileLayer() {
+        return compileLayer;
     }
     
     @Override

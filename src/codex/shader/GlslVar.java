@@ -18,7 +18,7 @@ public class GlslVar {
     
     protected String function, name, type, def;
     private String compilerName;
-    private GlslVar source;
+    private GlslVar compileSource;
     
     protected GlslVar() {}
     public GlslVar(String function, String name, String type, String def) {
@@ -32,8 +32,8 @@ public class GlslVar {
         assert name == null || !name.isBlank();
         compilerName = name;
     }
-    public void setCompilerSource(GlslVar source) {
-        this.source = source;
+    public void setCompileSource(GlslVar source) {
+        compileSource = source;
     }
     public String compileUsages(String string) {
         if (compilerName == null) {
@@ -81,7 +81,7 @@ public class GlslVar {
         if (compilerName == null) {
             throw new NullPointerException("Cannot compile because compiler-assigned name is null!");
         }
-        return type+" "+compilerName+" = "+type+"("+(source != null ? source.getCompilerName() : def)+");";
+        return type+" "+compilerName+" = "+type+"("+(compileSource != null ? compileSource.getCompilerName() : def)+");";
     }
     
     protected void setName(String name) {
@@ -110,8 +110,8 @@ public class GlslVar {
     public String getCompilerName() {
         return compilerName;
     }
-    public GlslVar getCompilerSource() {
-        return source;
+    public GlslVar getCompileSource() {
+        return compileSource;
     }
     
     public boolean isInput() {
