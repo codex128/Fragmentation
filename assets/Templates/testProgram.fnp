@@ -1,6 +1,3 @@
-nextId=3
+nextId=2
 module{id=0;glsl=Shaders/ColorOutput.sn;position=0,0;isOutput=true}
 module{id=1;glsl=Shaders/Uniform.sn;position=-200,0}
-module{id=2;glsl=Shaders/MixRGB.sn;position=-400,0}
-connection{out=1-value;in=2-color1}
-connection{out=2-result;in=0-color}

@@ -7,6 +7,8 @@ package codex.shader.gui;
 import codex.shader.GlslVar;
 import codex.shader.InputSocket;
 import com.simsilica.lemur.Container;
+import com.simsilica.lemur.component.BoxLayout;
+import com.simsilica.lemur.style.ElementId;
 
 /**
  * Represents the gui to manipulate the default argument to a {@link GlslVar}.
@@ -15,11 +17,18 @@ import com.simsilica.lemur.Container;
  */
 public abstract class Argument extends Container {
     
+    public static final String ELEMENT_ID = "argument";
     protected final InputSocket socket;
     
     public Argument(InputSocket socket) {
+        super(new ElementId(ELEMENT_ID));
         validate(socket.getVariable());
         this.socket = socket;
+        initGui();
+    }
+    
+    private void initGui() {
+        setLayout(new BoxLayout());
     }
     
     public abstract void displayValue(String value);

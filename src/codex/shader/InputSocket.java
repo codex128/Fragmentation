@@ -5,6 +5,8 @@
 package codex.shader;
 
 import codex.shader.gui.Argument;
+import com.simsilica.lemur.Label;
+import com.simsilica.lemur.style.ElementId;
 
 /**
  *
@@ -12,19 +14,22 @@ import codex.shader.gui.Argument;
  */
 public class InputSocket extends Socket {
     
-    private Argument argument;
+    public static final String ELEMENT_ID = "input";
+    protected Argument argument;
     
     public InputSocket(Module module, GlslVar var) {
-        super(module, var, Socket.IO.Input);
+        super(module, var, Socket.IO.Input, new ElementId(Socket.ELEMENT_ID).child(ELEMENT_ID));
         validate(var);
         if (var.getDefault() != null) {
             argument = Argument.create(this);
         }
-        initGui();
     }    
     
-    private void initGui() {
-        layout.addChild(0, 1, argument);
+    @Override
+    public void initGui() {
+        layout.addChild(0, 0, hub);
+        layout.addChild(0, 1, new Label(variable.getName()));
+        layout.addChild(0, 2, argument);
     }
     
     @Override

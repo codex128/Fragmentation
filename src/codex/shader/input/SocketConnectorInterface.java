@@ -7,11 +7,9 @@ package codex.shader.input;
 import codex.shader.Program;
 import codex.shader.Socket;
 import codex.shader.gui.LineGeometry;
-import codex.shader.gui.PartialConnection;
 import codex.shader.gui.SocketHub;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
-import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.simsilica.lemur.event.MouseListener;
@@ -33,9 +31,10 @@ public class SocketConnectorInterface extends LineGeometry implements MouseListe
     
     @Override
     public void updateLogicalState(float tpf) {
-        super.updateLogicalState(tpf);
+        //super.updateLogicalState(tpf);
         if (hub == null) return;
-        setPoints(hub.getWorldTranslation(), cursor);
+        Vector3f parent = getParent().getWorldTranslation();
+        setPoints(hub.getSocket().getConnectionLocation().subtractLocal(parent), cursor.subtract(parent));
     }
     @Override
     public void mouseButtonEvent(MouseButtonEvent event, Spatial target, Spatial capture) {
@@ -70,7 +69,7 @@ public class SocketConnectorInterface extends LineGeometry implements MouseListe
         cursor.set(vec);
     }
     public void terminate() {
-        if (hub != null) return;
+        if (hub == null) return;
         hub = null;
         removeFromParent();
     }

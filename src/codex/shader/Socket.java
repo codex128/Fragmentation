@@ -4,13 +4,13 @@
  */
 package codex.shader;
 
+import codex.shader.gui.FragmentationStyle;
 import codex.shader.gui.SocketHub;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.simsilica.lemur.Container;
-import com.simsilica.lemur.Label;
 import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.event.MouseEventControl;
+import com.simsilica.lemur.style.ElementId;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -20,6 +20,7 @@ import java.util.LinkedList;
  */
 public abstract class Socket extends Container {
     
+    public static final String ELEMENT_ID = "socket";
     public enum IO {
         Input, Output;
     }
@@ -32,24 +33,28 @@ public abstract class Socket extends Container {
     protected SocketHub hub;
     
     public Socket(Module module, GlslVar variable, IO type) {
-        super("");
+        this(module, variable, type, new ElementId(ELEMENT_ID));
+    }
+    public Socket(Module module, GlslVar variable, IO type, ElementId id) {
+        super(id);
         this.module = module;
         this.variable = variable;
         this.type = type;
-        initGui();
+        initBasicGui();
     }
     
-    private void initGui() {
+    private void initBasicGui() {
         layout = new SpringGridLayout();
         setLayout(layout);
-        layout.addChild(0, 0, new Label(variable.getName()));
-        hub = new SocketHub(this, ColorRGBA.Red);
-        attachChild(hub);
+        hub = new SocketHub(this, FragmentationStyle.getTypeColor(variable.getType()));
+        //layout.addChild(0, 0, hub);
         hub.addControl(new MouseEventControl(module.getProgram().getConnectorInterface()));
+        //layout.addChild(0, 1, new Label(variable.getName()));
     }
+    public abstract void initGui();
     
     public Vector3f getConnectionLocation() {
-        return hub.getPortLocation();
+        return hub.getPortLocation().add(0f, -18f, 0f);
     }
     public boolean acceptConnectionTo(Socket socket) {
         return varTypeCompatible(socket) && type != socket.getType() && module != socket.getModule();
@@ -79,23 +84,23 @@ public abstract class Socket extends Container {
         list.clear();
     }
     
+    public IO getType() {
+        return type;
+    }
+    public SocketHub getHub() {
+        return hub;
+    }
     public Module getModule() {
         return module;
     }
     public GlslVar getVariable() {
         return variable;
     }
-    public IO getType() {
-        return type;
-    }
-    public ArrayList<Connection> getConnectionList() {
-        return connections;
-    }
     public int getNumConnections() {
         return connections.size();
     }
-    public SocketHub getHub() {
-        return hub;
+    public ArrayList<Connection> getConnectionList() {
+        return connections;
     }
     @Override
     public String toString() {
