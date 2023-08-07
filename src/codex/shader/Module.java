@@ -4,6 +4,7 @@
  */
 package codex.shader;
 
+import com.jme3.input.MouseInput;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import com.jme3.math.Vector3f;
@@ -74,8 +75,9 @@ public class Module extends Container implements MouseListener {
 
     @Override
     public void mouseButtonEvent(MouseButtonEvent event, Spatial target, Spatial capture) {
-        if (target == this && event.isPressed()) {
+        if (target == this && event.isPressed() && event.getButtonIndex() == MouseInput.BUTTON_LEFT) {
             event.setConsumed();
+            program.setSelected(this);
         }
         else {
             drag = null;

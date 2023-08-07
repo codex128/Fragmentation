@@ -3,6 +3,7 @@ package codex.shader;
 import codex.shader.asset.FileBrowser;
 import codex.shader.asset.GlslLoader;
 import codex.shader.asset.ProgramAsset;
+import codex.shader.compile.CompileState;
 import codex.shader.gui.FragmentationStyle;
 import com.jme3.app.SimpleApplication;
 import com.jme3.renderer.RenderManager;
@@ -17,6 +18,8 @@ public class Main extends SimpleApplication {
 
     public static void main(String[] args) {
         Main app = new Main();
+        app.setDisplayStatView(false);
+        app.setDisplayFps(false);
         app.start();
     }
 
@@ -29,17 +32,18 @@ public class Main extends SimpleApplication {
         
         assetManager.registerLoader(ProgramAsset.class, "fnp");
         assetManager.registerLoader(GlslLoader.class, "sn");
+        assetManager.registerLoader(ShaderNodeManager.IndexLoader.class, "index");
         
-        stateManager.attach(new Program());
         stateManager.attach(new FileBrowser());
+        stateManager.attach(new CompileState());
+        stateManager.attach(new ShaderNodeManager());
+        stateManager.attach(new Program());
         
     }
-
     @Override
     public void simpleUpdate(float tpf) {
         //TODO: add update code
     }
-
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code

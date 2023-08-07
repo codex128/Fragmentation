@@ -17,7 +17,7 @@ public class StaticGlsl {
     private GLSL source;
     
     public StaticGlsl(GLSL source) {
-        this.id = source.getAssetName();
+        this.id = source.getName();
         this.source = source;
     }
     

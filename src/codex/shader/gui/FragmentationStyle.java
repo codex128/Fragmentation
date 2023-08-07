@@ -9,6 +9,7 @@ import codex.shader.Module;
 import codex.shader.Socket;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.simsilica.lemur.Button;
 import com.simsilica.lemur.HAlignment;
 import com.simsilica.lemur.Insets3f;
 import com.simsilica.lemur.component.QuadBackgroundComponent;
@@ -23,7 +24,7 @@ public class FragmentationStyle {
     
     private static final HashMap<String, ColorRGBA> CLRS = new HashMap<>();
     static {
-        CLRS.put("float", ColorRGBA.Blue);
+        CLRS.put("float", ColorRGBA.Green);
         CLRS.put("vec4", ColorRGBA.Red);
     }
     public static ColorRGBA getTypeColor(String type) {
@@ -36,6 +37,9 @@ public class FragmentationStyle {
     public static void initialize(Styles styles) {
         var common = styles.getSelector(STYLE);
         common.set("fontSize", 14);
+        var button = styles.getSelector(Button.ELEMENT_ID, STYLE);
+        button.set("insets", new Insets3f(1f, 3f, 1f, 3f));
+        button.set("background", new QuadBackgroundComponent(new ColorHSBA(0f, 0f, .1f, 1f).toRGBA()));
         var module = styles.getSelector(Module.ELEMENT_ID, STYLE);
         //module.set("preferredSize", new Vector3f(170f, 170f, 0f));
         module.set("background", new QuadBackgroundComponent(new ColorHSBA(0f, 0f, .05f, 1f).toRGBA()));

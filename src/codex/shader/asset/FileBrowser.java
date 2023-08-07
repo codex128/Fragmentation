@@ -18,12 +18,14 @@ import java.util.logging.Logger;
  */
 public class FileBrowser extends GameAppState {
     
+    public static final String HOME = System.getProperty("user.home");
+    public static final String LOCALSTORAGE = HOME+"/FragmentationPlatform";
+    
     @Override
     protected void init(Application app) {
-        try {
-            getState(Program.class).createFromAsset("Templates/testProgram.fnp");
-        } catch (IOException ex) {
-            Logger.getLogger(FileBrowser.class.getName()).log(Level.SEVERE, null, ex);
+        var storage = new File(LOCALSTORAGE);
+        if (!storage.exists()) {
+            storage.mkdir();
         }
     }
     @Override
@@ -38,6 +40,18 @@ public class FileBrowser extends GameAppState {
     }
     public void exportFile(File start, String name, String extension, Exporter export) {
         // opens the file browser in export mode
+    }
+    
+    public static String path(String... sections) {
+        var render = new StringBuilder();
+        int i = 0;
+        for (var p : sections) {
+            render.append(p);
+            if (++i < sections.length) {
+                render.append("/");
+            }
+        }
+        return render.toString();
     }
     
 }

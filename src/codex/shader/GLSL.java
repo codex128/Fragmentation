@@ -4,8 +4,12 @@
  */
 package codex.shader;
 
+import codex.shader.asset.FileBrowser;
 import com.jme3.asset.AssetInfo;
+import com.jme3.asset.AssetManager;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,11 +28,13 @@ public class GLSL {
         Def, Static, Init, Main;
     }
     
-    public static final String NAME_ID = "$name", INCLUDE_ID = "#include";
+    public static final String NAME_ID = "$name", INCLUDE_ID = "#include", OUTPUT_ID = "$output";
+    public static final String NATIVE = "native", ADDON = "addon";
     private static final HashMap<String, StaticGlsl> statics = new HashMap<>();
     
-    private final AssetInfo info;
+    private String[] locator;
     private String name;
+    private boolean output = false;
     private final ArrayList<Resource> resources = new ArrayList<>();
     private final ArrayList<String> init = new ArrayList<>();
     private final ArrayList<String> main = new ArrayList<>();
@@ -37,8 +43,16 @@ public class GLSL {
     private ParseState state;
     
     public GLSL(AssetInfo info) throws IOException, SyntaxException {
-        this.info = info;
-        read(this.info.openStream());
+        read(info.openStream());
+    }
+    public GLSL(File file) throws IOException, SyntaxException {
+        if (!file.getName().endsWith(".sn")) {
+            throw new IllegalArgumentException("Incorrect file type!");
+        }
+        read(new FileInputStream(file));
+    }
+    public GLSL(InputStream stream) throws IOException, SyntaxException {
+        
     }
     
     private void read(InputStream stream) throws IOException, SyntaxException {
@@ -61,6 +75,7 @@ public class GLSL {
                 if (data.startsWith("<static>")) {
                     if (staticCode == null) {
                         staticCode = addStaticIfAbsent(new StaticGlsl(this));
+                        System.out.println("create static code: "+staticCode);
                     }
                     state = ParseState.Static;
                 }
@@ -86,6 +101,9 @@ public class GLSL {
                         res.setHyperlink(args[1]);
                     }
                     resources.add(res);
+                }
+                else if (data.startsWith(OUTPUT_ID)) {
+                    output = true;
                 }
             }
             case Static -> {
@@ -118,12 +136,17 @@ public class GLSL {
             }
         }
     }
+    
     public void applyDefault(String[] def) {
         assert def.length == 2;
         if (def[0].isBlank()) return;
         var variable = variables.stream().filter(v -> v.getName().equals(def[0])).findAny().orElse(null);
         if (variable == null) return;
         variable.setDefault(def[1]);
+    }
+    public void setAssetLocator(String... locator) {
+        assert locator.length == 2;
+        this.locator = locator;
     }
     
     public String compileResources(int index) {
@@ -156,14 +179,17 @@ public class GLSL {
         return compileLine(""+main.get(index));
     }
     
-    public AssetInfo getAssetInfo() {
-        return info;
-    }
     public String getName() {
         return name;
     }
-    public String getAssetName() {
-        return info.getKey().getName();
+    public String[] getAssetLocator() {
+        if (locator == null) {
+            throw new NullPointerException("GLSL asset locator is null!");
+        }
+        return locator;
+    }
+    public boolean isOutput() {
+        return output;
     }
     public ArrayList<Resource> getResources() {
         return resources;
@@ -188,6 +214,20 @@ public class GLSL {
     }
     public Stream<GlslVar> getOutputVariables() {
         return variables.stream().filter(v -> v.isOutput());
+    }
+    @Override
+    public String toString() {
+        return name;
+    }
+    
+    public static GLSL fromLocator(AssetManager assetManager, String[] locator) {
+        var glsl = switch (locator[0]) {
+            case GLSL.NATIVE -> (GLSL)assetManager.loadAsset(FileBrowser.path(ShaderNodeManager.NATIVES, locator[1]));
+            case GLSL.ADDON  -> (GLSL)assetManager.loadAsset(FileBrowser.path("addons", locator[1]));
+            default -> throw new IllegalArgumentException("Unknown location type!");
+        };
+        glsl.setAssetLocator(locator);
+        return glsl;
     }
     
     private static StaticGlsl addStaticIfAbsent(StaticGlsl sg) {

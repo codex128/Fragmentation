@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  *
@@ -23,12 +24,11 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     
     private static final String PREFIX = "gv_";
     private static final String[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    private static final String TAB = "    ";
-    
+    private static final String TAB = "    ";    
     private final static String[] STEPS = {"resources", "generics", "verify-generics", "inits", "statics", "main"};
     
     private final Program program;
-    private final LinkedList<CompileListener> listeners = new LinkedList<>();
+    private final ConcurrentLinkedQueue<CompileListener> listeners = new ConcurrentLinkedQueue<>();
     private final LinkedList<Module> compileQueue = new LinkedList<>();
     private final ArrayList<String> compiledCode = new ArrayList<>();
     private final HashSet<String> resources = new HashSet<>();
@@ -55,12 +55,13 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 break;
             }
         }
-        cleanupModules();
+        cleanup();
         if (error == null) {
-            notifyListeners(l -> l.compileFinished(this));            
+            System.out.println("\nCompile Successful!");
+            notifyListeners(l -> l.compileFinished(this));
         }
         else {
-            System.err.println("Compiler Error: "+error.getErrorMessage());
+            System.err.println("\nCompiler Error: "+error.getErrorMessage());
             notifyListeners(l -> l.compileError(error));
         }
     }    
@@ -73,10 +74,10 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     }
     
     // setup
-    private void initialize() {
+    public void initialize() {
+        System.out.println("\n--== Compiling ==--\n");
         queueModules();
-        //moduleIterator = compileQueue.iterator();
-        //staticIterator = GLSL.getStaticGlsl().iterator();
+        System.out.println("queue compiled");
         for (var m : compileQueue) {
             for (var v : m.getGlsl().getVariables()) {
                 if (v.getCompilerName() != null) continue;
@@ -119,7 +120,9 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 if (socket.getVariable().getCompilerSource().getCompilerName() == null) {
                     independent = false;
                     // append the dependency module to the stack
-                    stack.addLast(socket.getConnection().getOutputSocket().getModule());
+                    if (!stack.contains(socket.getConnection().getOutputSocket().getModule())) {
+                        stack.addLast(socket.getConnection().getOutputSocket().getModule());
+                    }
                 }
             }
             if (independent) {
@@ -144,6 +147,14 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     }
     
     // compile
+    public void update() {
+        if (error != null) {
+            notifyListeners(l -> l.compileError(error));
+        }
+        if (compile()) {
+            notifyListeners(l -> l.compileFinished(this));
+        }
+    }
     private boolean compile() {
         if (runCompileStep(state)) {
             currentModule = null;
@@ -174,10 +185,11 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         };
     }
     private void append(String line) {
-        System.out.println(line);
+        //System.out.println(line);
         compiledCode.add(line);
     }
     private boolean compileResources() {
+        System.out.println("compile resources");
         if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getResources().isEmpty()) {
             var res = currentModule.getGlsl().getResources().get(substep).getResource();
@@ -194,6 +206,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileGenerics() {
+        System.out.println("compile generics");
         if (moduleIterator == null) {
             moduleIterator = compileQueue.iterator();
         }
@@ -222,6 +235,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean verifyGenerics() {
+        System.out.println("verify generics");
         for (var m : compileQueue) {
             for (var s : m.getInputSockets()) {
                 if (s.getConnection() != null && !s.varTypeMatch(s.getConnection().getOutputSocket())) {
@@ -233,6 +247,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return true;
     }
     private boolean compileInitCode() {
+        System.out.println("compile init code");
         if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getInitCode().isEmpty()) {
             append(currentModule.getGlsl().compileInitLine(substep++));
@@ -244,16 +259,20 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileStaticCode() {
+        System.out.println("compile static code");
         if (staticIterator == null) {
             staticIterator = GLSL.getStaticGlsl().iterator();
         }
         if (currentStatic == null) {
-            if (!staticIterator.hasNext()) return true;
+            if (!staticIterator.hasNext()) {
+                System.out.println("no more static code to compile");
+                return true;
+            }
             currentStatic = staticIterator.next();
         }
         if (staticSource == null) {
             for (var m : compileQueue) {
-                if (m.getGlsl().getAssetName().equals(currentStatic.getId())) {
+                if (m.getGlsl().getName().equals(currentStatic.getId())) {
                     staticSource = m.getGlsl();
                     break;
                 }
@@ -267,6 +286,9 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         if (!currentStatic.getCode().isEmpty()) {
             append(currentStatic.compileLine(substep++, staticSource));
         }
+        else {
+            System.out.println("static code is completely empty!");
+        }
         if (substep >= currentStatic.getCodeLength()) {
             currentStatic = null;
             staticSource = null;
@@ -275,6 +297,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileMainCode() {
+        System.out.println("compile main code");
         if (fetchNextModule()) return true;
         if (substep < currentModule.getInputSockets().size()) {            
             // declare variables
@@ -306,7 +329,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     }
     
     // cleanup
-    private void cleanupModules() {
+    public void cleanup() {
         moduleIterator = null;
         staticIterator = null;
         compileQueue.clear();
