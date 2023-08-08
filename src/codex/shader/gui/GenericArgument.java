@@ -59,6 +59,7 @@ public class GenericArgument extends Argument {
     }
     @Override
     public String getDefaultValue() {
+        if (!isGlslType(field.getText())) return null;
         return field.getText();
     }
     @Override
