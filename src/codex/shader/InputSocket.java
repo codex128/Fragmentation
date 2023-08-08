@@ -24,10 +24,15 @@ public class InputSocket extends Socket {
     }    
     
     private boolean createArgument() {
-        if (argument != null || variable.getDefault() == null) {
+        if (variable.getDefault() == null) {
             return false;
         }
-        argument = Argument.create(this);
+        if (argument == null) {
+            argument = Argument.create(this);
+        }
+        if (argument != null) {
+            argument.displayValue(variable.getDefault());
+        }
         return true;
     }
     
@@ -46,7 +51,9 @@ public class InputSocket extends Socket {
         assert def != null;
         variable.setDefault(def);
         createArgument();
-        argument.displayValue(def);
+        if (argument != null) {
+            argument.displayValue(def);
+        }
     }
     @Override
     public void updateLogicalState(float tpf) {

@@ -129,6 +129,13 @@ public class Module extends Container implements MouseListener {
     public void setCompileLayer(int layer) {
         compileLayer = layer;
     }
+    public void applyDefault(String[] def) {
+        assert def.length == 2;
+        if (def[0].isBlank()) return;
+        var socket = inputs.stream().filter(s -> s.getVariable().getName().equals(def[0])).findAny().orElse(null);
+        if (socket == null) return;
+        socket.setVariableDefault(def[1]);
+    }
     
     public long getId() {
         return id;

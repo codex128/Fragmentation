@@ -45,9 +45,9 @@ public abstract class Argument extends Container {
     
     public static Argument create(InputSocket socket) {
         var arg = make(socket);
-        if (arg != null) {
-            arg.displayValue(socket.getVariable().getDefault());
-        }
+//        if (arg != null) {
+//            arg.displayValue(socket.getVariable().getDefault());
+//        }
         return arg;
     }
     private static Argument make(InputSocket socket) {
