@@ -4,7 +4,7 @@ $name Math
 @input float value1 1.0
 @input float value2 1.0
 
-@local math
+@static math
 
 @output float result
 

@@ -75,12 +75,18 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     
     // setup
     public void initialize() {
-        System.out.println("\n--== Compiling ==--\n");
         queueModules();
         for (var m : compileQueue) {
+            // generate names for variables that didn't recieve one during queueing (non-input variables)
             for (var v : m.getGlsl().getVariables()) {
                 if (v.getCompilerName() != null) continue;
+                //System.out.println("assign compiler name to "+v.getName()+" of "+m.getGlsl().getName());
                 v.setCompilerName(generateNextName());
+            }
+            // assign compile sources to static code
+            var statics = GLSL.getStaticGlsl(m.getGlsl().getName());
+            if (statics != null && statics.getCompileSource() == null) {
+                statics.setCompileSource(m.getGlsl());
             }
         }
     }
@@ -124,6 +130,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         for (var s : module.getInputSockets()) {
             // generate a unique name for this variable
             if (s.getVariable().getCompilerName() == null) {
+                System.out.println("assign compiler name to "+s.getVariable().getName()+" of "+module.getGlsl().getName());
                 s.getVariable().setCompilerName(generateNextName());
             }
             // if this has no connections, there is no need to do further calculations
@@ -258,6 +265,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     private boolean compileInitCode() {
         if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getInitCode().isEmpty()) {
+            System.out.println("compile init line from "+currentModule.getGlsl().getName());
             append(currentModule.getGlsl().compileInitLine(substep++));
         }
         if (substep >= currentModule.getGlsl().getInitCode().size()) {
@@ -272,7 +280,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         }
         if (currentStatic == null) {
             if (!staticIterator.hasNext()) {
-                System.out.println("no more static code to compile");
                 return true;
             }
             currentStatic = staticIterator.next();
@@ -292,9 +299,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         }
         if (!currentStatic.getCode().isEmpty()) {
             append(currentStatic.compileLine(substep++, staticSource));
-        }
-        else {
-            System.out.println("static code is completely empty!");
         }
         if (substep >= currentStatic.getCodeLength()) {
             currentStatic = null;
@@ -346,6 +350,9 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 v.setCompilerName(null);
                 v.setCompileSource(null);
             }
+        }
+        for (var s : GLSL.getStaticGlsl()) {
+            s.setCompileSource(null);
         }
     }
     

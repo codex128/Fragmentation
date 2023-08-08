@@ -4,6 +4,7 @@
  */
 package codex.shader;
 
+import com.jme3.math.Vector3f;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.style.ElementId;
 

@@ -14,26 +14,26 @@ public class StaticGlsl {
     
     private final String id;
     private final ArrayList<String> code = new ArrayList<>();
-    private GLSL source;
+    private GLSL compileSource;
     
-    public StaticGlsl(GLSL source) {
-        this.id = source.getName();
-        this.source = source;
+    public StaticGlsl(String id) {
+        this.id = id;
     }
     
-    public boolean append(GLSL source, String line) {
-        if (this.source == null || this.source != source) return false;
+    public void append(String line) {
         code.add(line);
-        return true;
     }
     public void close() {
-        this.source = null;
+        this.compileSource = null;
     }
     
+    public void setCompileSource(GLSL src) {
+        compileSource = src;
+    }
     public String compileLine(int index, GLSL source) {
         var line = code.get(index);
         for (var v : source.getVariables()) {
-            if (!v.isLocal()) continue;
+            if (!v.isLocal() && !v.isStatic()) continue;
             line = v.compileUsages(line);
         }
         return line;
@@ -47,6 +47,9 @@ public class StaticGlsl {
     }
     public int getCodeLength() {
         return code.size();
+    }
+    public GLSL getCompileSource() {
+        return compileSource;
     }
     
 }

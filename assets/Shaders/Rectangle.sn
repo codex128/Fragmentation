@@ -4,7 +4,7 @@ $name Rectangle
 @input vec2 origin 0.0,0.0
 @input vec2 size 1.0,1.0
 
-@local rect
+@static rect
 
 @output float factor
 

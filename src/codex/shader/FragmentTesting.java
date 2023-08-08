@@ -16,7 +16,7 @@ import com.jme3.scene.shape.Box;
 public class FragmentTesting extends SimpleApplication {
     
     Material mat;
-    float value = 0f;
+    float value = -1.2f;
     float speed = .5f;
     
     public static void main(String[] args) {
@@ -40,8 +40,8 @@ public class FragmentTesting extends SimpleApplication {
             value = 1f;
             speed = -speed;
         }
-        else if (value < 0f) {
-            value = 0f;
+        else if (value < -1.2f) {
+            value = -1.2f;
             speed = -speed;
         }
         mat.setFloat("Dissolve", value);
