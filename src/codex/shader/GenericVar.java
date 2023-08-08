@@ -22,7 +22,7 @@ public class GenericVar extends StringVar {
     }
     
     @Override
-    public String compileUsages(String string) {
+    public String renderUsages(String string) {
         return StringVar.replaceUsages(string, "<"+name+">", def);
     }
     @Override

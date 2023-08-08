@@ -1,8 +1,8 @@
 $name Math
 
-@input state function 0:Add,Subtract,Multiply,Divide,Absolute,Fraction,Floor,Ceil,Modulus,Power,Square Root,Maximum,Minimum
-@input float value1 1.0
-@input float value2 1.0
+@input constant state function 0:Add,Subtract,Multiply,Divide,Absolute,Fraction,Floor,Ceil,Modulus,Power,Square Root,Maximum,Minimum
+@input constant float value1 1.0
+@input constant float value2 1.0
 
 @static math
 

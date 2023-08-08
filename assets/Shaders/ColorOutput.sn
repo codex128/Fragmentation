@@ -1,7 +1,7 @@
 $name Fragment Output
 $output
 
-@input vec4 color 0.0,0.0,1.0,1.0
+@input constant vec4 color 0.0,0.0,1.0,1.0
 
 <main>
 

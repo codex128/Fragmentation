@@ -3,7 +3,7 @@ $name Extract
 @input generic inType vec4
 @input generic outType float
 @input String property x
-@input <inType> in
+@input constant <inType> in
 
 @output <outType> out
 

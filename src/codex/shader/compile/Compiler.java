@@ -320,7 +320,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         if (fetchNextModule()) return true;
         if (substep < currentModule.getInputSockets().size()) {            
             // declare variables
-            var line = currentModule.getInputSockets().get(substep++).getVariable().compileDeclaration();
+            var line = currentModule.getInputSockets().get(substep++).getVariable().renderDeclaration();
             if (line != null) append(TAB+line);
         }
         else if (!currentModule.getGlsl().getMainCode().isEmpty()) {

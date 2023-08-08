@@ -1,7 +1,7 @@
 $name Alpha
 
-@input vec4 color 0.0,0.0,0.0,1.0
-@input float alpha 1.0
+@input constant vec4 color 0.0,0.0,0.0,1.0
+@input constant float alpha 1.0
 
 @output vec4 result
 

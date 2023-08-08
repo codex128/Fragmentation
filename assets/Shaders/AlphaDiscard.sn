@@ -1,7 +1,7 @@
 $name Alpha Discard
 
-@input float alpha 1.0
-@input float threshold 0.1
+@input constant float alpha 1.0
+@input constant float threshold 0.1
 
 <main>
 

@@ -1,6 +1,6 @@
 $name Seperate XYZW
 
-@input vec4 vector 0.0,0.0,0.0,0.0
+@input constant vec4 vector 0.0,0.0,0.0,0.0
 
 @output float x
 @output float y

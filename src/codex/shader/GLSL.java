@@ -52,9 +52,6 @@ public class GLSL {
         }
         read(new FileInputStream(file));
     }
-    public GLSL(InputStream stream) throws IOException, SyntaxException {
-        
-    }
     
     private void read(InputStream stream) throws IOException, SyntaxException {
         var reader = new BufferedReader(new InputStreamReader(stream));
@@ -181,10 +178,10 @@ public class GLSL {
                 if (s == null) {
                     throw new NullPointerException("Static delegate missing information!");
                 }
-                line = s.compileUsages(line);
+                line = s.renderUsages(line);
             }
             else {
-                line = v.compileUsages(line);
+                line = v.renderUsages(line);
             }
         }
         return line;

@@ -1,9 +1,9 @@
 $name Combine XYZW
 
-@input float x 0.0
-@input float y 0.0
-@input float z 0.0
-@input float w 0.0
+@input constant float x 0.0
+@input constant float y 0.0
+@input constant float z 0.0
+@input constant float w 0.0
 
 @output vec4 vector
 

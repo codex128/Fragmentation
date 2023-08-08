@@ -1,9 +1,9 @@
 $name Checker Texture
 
 @input vec2 vector 0.0,0.0
-@input vec4 color1 0.0,0.0,0.0,1.0
-@input vec4 color2 1.0,1.0,1.0,1.0
-@input float scale 5.0
+@input constant vec4 color1 0.0,0.0,0.0,1.0
+@input constant vec4 color2 1.0,1.0,1.0,1.0
+@input constant float scale 5.0
 
 @static isEven
 @static checker
@@ -30,6 +30,6 @@ vec4 checker(vec2 uv, vec4 c1, vec4 c2, float s) {
 </static>
 <main>
 
-vec4 color = checker(vector, color1, color2, scale);
+vec4 color = checker(vector, color1, color2, scale).rgba;
 
 </main>

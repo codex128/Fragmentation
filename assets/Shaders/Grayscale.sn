@@ -1,6 +1,6 @@
 $name Grayscale
 
-@input vec4 color
+@input constant vec4 color
 
 @output float gray
 

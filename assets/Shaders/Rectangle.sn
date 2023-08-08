@@ -1,8 +1,8 @@
 $name Rectangle
 
-@input vec2 vector 0.0,0.0
-@input vec2 origin 0.0,0.0
-@input vec2 size 1.0,1.0
+@input constant vec2 vector 0.0,0.0
+@input constant vec2 origin 0.0,0.0
+@input constant vec2 size 1.0,1.0
 
 @static rect
 

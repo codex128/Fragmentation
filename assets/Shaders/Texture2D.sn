@@ -1,7 +1,7 @@
 $name Texture2D
 
-@input sampler2D texture
-@input vec2 texCoord
+@input constant sampler2D texture
+@input constant vec2 texCoord
 
 @output vec4 color
 

@@ -1,7 +1,7 @@
 $name Noise Texture
 
 @input vec2 vector 0.0,0.0
-@input float scale 5.0
+@input constant float scale 5.0
 
 @static rand2D
 @static noise2D

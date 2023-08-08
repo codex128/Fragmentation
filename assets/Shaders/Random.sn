@@ -1,8 +1,8 @@
 $name Random
 
-@input float seed 34.39728
-@input float min 0.0
-@input float max 1.0
+@input constant float seed 34.9
+@input constant float min 0.0
+@input constant float max 1.0
 
 @static rand
 

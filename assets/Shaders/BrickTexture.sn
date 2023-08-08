@@ -1,11 +1,11 @@
 $name Brick Texture
 
 @input vec2 vector 0.0,0.0
-@input float scale 5.0
-@input float offset 0.5
-@input vec2 size 1.0,0.5
-@input float mortarWeight 0.05
-@input float transition 0.05
+@input constant float scale 5.0
+@input constant float offset 0.5
+@input constant vec2 size 1.0,0.5
+@input constant float mortarWeight 0.05
+@input constant float transition 0.05
 
 @static brick
 

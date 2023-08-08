@@ -18,11 +18,11 @@ public class StringVar extends GlslVar {
     }    
     
     @Override
-    public String compileDeclaration() {
+    public String renderDeclaration() {
         return null;
     }
     @Override
-    public String compileUsages(String string) {
+    public String renderUsages(String string) {
         return replaceUsages(string, "{"+name+"}", def);
     }
     

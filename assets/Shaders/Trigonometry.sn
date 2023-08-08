@@ -1,7 +1,7 @@
 $name Trigonometry.sn
 
-@input state function 0:Sine,Cosine,Tangent,Arc Sine,Arc Cosine,Radians,Degrees
-@input float value 1.0
+@input constant state function 0:Sine,Cosine,Tangent,Arc Sine,Arc Cosine,Radians,Degrees
+@input constant float value 1.0
 
 @static trig
 

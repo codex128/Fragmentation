@@ -1,8 +1,8 @@
 $name Compare
 
-@input state function 0:Greater Than,Less Than,Equal
-@input float value1 1.0
-@input float value2 1.0
+@input constant state function 0:Greater,Lesser,Equal
+@input constant float value1 1.0
+@input constant float value2 1.0
 
 @static compare
 

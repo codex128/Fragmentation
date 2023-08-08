@@ -1,9 +1,9 @@
 $name Mix
 
 @input generic varTypes vec4
-@input float factor 0.5
-@input <varTypes> value1
-@input <varTypes> value2
+@input constant float factor 0.5
+@input constant <varTypes> value1
+@input constant <varTypes> value2
 
 @output <varTypes> result
 

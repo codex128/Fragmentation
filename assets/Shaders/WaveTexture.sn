@@ -1,7 +1,7 @@
 $name Wave Texture
 
-@input vec2 texCoord 0.0,0.0
-@input float scale 5.0
+@input constant vec2 vector 0.0,0.0
+@input constant float scale 5.0
 
 @static wave
 
@@ -10,12 +10,12 @@ $name Wave Texture
 <static>
 
 float wave(vec2 uv, float s) {
-    return sin(uv.x / s);
+    return sin(uv.x * s);
 }
 
 </static>
 <main>
 
-float factor = wave(texCoord, scale);
+float factor = wave(vector, scale);
 
 </main>
