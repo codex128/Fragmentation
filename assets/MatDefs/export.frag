@@ -47,7 +47,7 @@ void main() {
     vec2 gv_K = vec2(texCoord);
     int gv_k = int(0);
     float gv_l = float(gv_J);
-    float gv_o = float(0.1);
+    float gv_o = float(0.5);
     float gv_M = gv_L(gv_k, gv_l, gv_o);
     vec2 gv_f = vec2(gv_K);
     float gv_i = float(5.0);

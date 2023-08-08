@@ -35,8 +35,11 @@ public abstract class Argument extends Container {
     
     public abstract void displayValue(String value);
     public abstract String getDefaultValue();
-    public void compile(GlslVar var) {
-        var.setDefault(getDefaultValue());
+    public abstract String getFallbackValue();
+    public boolean compile(GlslVar var) {
+        var n = getDefaultValue();
+        if (n != null) var.setDefault(n);
+        return n != null;
     }    
     
     public VersionedReference getReference() {
