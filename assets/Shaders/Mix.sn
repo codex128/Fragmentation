@@ -9,6 +9,6 @@ $name Mix
 
 <main>
 
-<varTypes> result = mix(value1, value2, factor);
+<varTypes> result = mix(value1, value2, min(max(factor, 0.0), 1.0));
 
 </main>

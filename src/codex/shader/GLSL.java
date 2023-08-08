@@ -5,6 +5,7 @@
 package codex.shader;
 
 import codex.shader.asset.FileBrowser;
+import codex.shader.asset.GlslKey;
 import com.jme3.asset.AssetInfo;
 import com.jme3.asset.AssetManager;
 import java.io.BufferedReader;
@@ -191,6 +192,9 @@ public class GLSL {
     public boolean isOutput() {
         return output;
     }
+    public boolean isTerminal() {
+        return getOutputVariables().noneMatch(v -> true);
+    }
     public ArrayList<Resource> getResources() {
         return resources;
     }
@@ -222,8 +226,8 @@ public class GLSL {
     
     public static GLSL fromLocator(AssetManager assetManager, String[] locator) {
         var glsl = switch (locator[0]) {
-            case GLSL.NATIVE -> (GLSL)assetManager.loadAsset(FileBrowser.path(ShaderNodeManager.NATIVES, locator[1]));
-            case GLSL.ADDON  -> (GLSL)assetManager.loadAsset(FileBrowser.path("addons", locator[1]));
+            case GLSL.NATIVE -> (GLSL)assetManager.loadAsset(new GlslKey(FileBrowser.path(ShaderNodeManager.NATIVES, locator[1])));
+            case GLSL.ADDON  -> (GLSL)assetManager.loadAsset(new GlslKey(FileBrowser.path("addons", locator[1])));
             default -> throw new IllegalArgumentException("Unknown location type!");
         };
         glsl.setAssetLocator(locator);

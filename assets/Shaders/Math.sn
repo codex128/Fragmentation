@@ -28,6 +28,6 @@ float math(int f, float a, float b) {
 </static>
 <main>
 
-float result = math(state, value1, value2);
+float result = math(function, value1, value2);
 
 </main>

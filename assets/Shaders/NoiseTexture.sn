@@ -11,7 +11,7 @@ $name Noise Texture
 <static>
 
 float rand2D(vec2 uv) {
-    return return fract(sin(dot(uv.xy, vec2(14.3423, 76.8593))) * 41852.5463133);
+    return fract(sin(dot(uv.xy, vec2(14.3423, 76.8593))) * 41852.5463133);
 }
 float noise2D(vec2 uv, float s) {
     uv *= s;

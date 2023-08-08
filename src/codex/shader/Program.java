@@ -76,6 +76,7 @@ public class Program extends GameAppState {
         initGui();     
         
         try {
+            //load(new File(FileBrowser.path(FileBrowser.HOME, "fragmentation.fnp")));
             createFromAsset("Templates/testProgram.fnp");
         } catch (IOException ex) {
             Logger.getLogger(FileBrowser.class.getName()).log(Level.SEVERE, null, ex);
@@ -143,7 +144,7 @@ public class Program extends GameAppState {
         menubar.addChild(new Button("Add")).addClickCommands(new PopupCommand(modulePick, new ColorRGBA(0f, 0f, 0f, .7f)));
         var export = menubar.addChild(new Button("Export"));
         export.addClickCommands(new ExportCommand());
-        //menubar.addChild(new Button("Save")).addClickCommands(new);
+        menubar.addChild(new Button("Save")).addClickCommands(new SaveCommand());
         
     }
     
@@ -393,7 +394,7 @@ public class Program extends GameAppState {
         @Override
         public void onKeyEvent(KeyInputEvent evt) {
             if (selected != null && evt.isPressed() && evt.getKeyCode() == KeyInput.KEY_DELETE) {
-                selected.terminate();
+                removeModule(selected);
                 selected = null;
             }
         }
@@ -485,6 +486,16 @@ public class Program extends GameAppState {
             export(compiler, fetchTargetFile());
         }
         
+    }
+    private class SaveCommand implements Command<Button> {
+        @Override
+        public void execute(Button source) {
+            try {
+                save(new File(FileBrowser.path(FileBrowser.HOME, "fragmentation.fnp")));
+            } catch (IOException ex) {
+                Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }        
     }
     
 }

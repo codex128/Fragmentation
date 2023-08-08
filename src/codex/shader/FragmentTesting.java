@@ -15,6 +15,10 @@ import com.jme3.scene.shape.Box;
  */
 public class FragmentTesting extends SimpleApplication {
     
+    Material mat;
+    float value = 0f;
+    float speed = .5f;
+    
     public static void main(String[] args) {
         new FragmentTesting().start();
     }
@@ -23,11 +27,24 @@ public class FragmentTesting extends SimpleApplication {
     public void simpleInitApp() {
         
         var cube = new Geometry("test-cube", new Box(1f, 1f, 1f));
-        var mat = new Material(assetManager, "MatDefs/Tester.j3md");
-        //mat.setColor("Vec4", ColorRGBA.Blue);
+        mat = new Material(assetManager, "MatDefs/Tester.j3md");
+        mat.setFloat("Dissolve", value);
         cube.setMaterial(mat);
         rootNode.attachChild(cube);
         
+    }
+    @Override
+    public void simpleUpdate(float tpf) {
+        value += tpf*speed;
+        if (value > 1f) {
+            value = 1f;
+            speed = -speed;
+        }
+        else if (value < 0f) {
+            value = 0f;
+            speed = -speed;
+        }
+        mat.setFloat("Dissolve", value);
     }
     
 }

@@ -77,7 +77,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     public void initialize() {
         System.out.println("\n--== Compiling ==--\n");
         queueModules();
-        System.out.println("queue compiled");
         for (var m : compileQueue) {
             for (var v : m.getGlsl().getVariables()) {
                 if (v.getCompilerName() != null) continue;
@@ -87,19 +86,30 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     }
     private void queueModules() {
         program.getOutputModule().setCompileLayer(0);
-        // this should configure all the compile layers correctly
         int max = bump(program.getOutputModule(), 0);
+        for (Module m : program.getModules()) {
+            if (!m.getGlsl().isTerminal()) continue;
+            m.setCompileLayer(0);
+            max = bump(m, max);
+        }
         // sort by compile layer
         var table = new ArrayList<LinkedList<Module>>();
         for (int i = 0; i <= max; i++) {
             table.add(new LinkedList<>());
         }
-        for (var m : program.getModules()) {
+        // add the main output module first, so that it will compile last
+        table.get(0).add(program.getOutputModule());
+        // sort in other modules
+        main: for (var m : program.getModules()) {
+            if (m == program.getOutputModule()) continue;
             if (m.getCompileLayer() > max) {
                 throw new IllegalStateException("Compile layer does not exist ("+m.getCompileLayer()+")!");
             }
-            if (m.getCompileLayer() < 0) continue;
-            table.get(m.getCompileLayer()).add(m);
+            // if the compile layer wasn't changed, the module isn't used
+            if (m.getCompileLayer() < 0) {
+                continue;
+            }
+            table.get(m.getCompileLayer()).addLast(m);
         }
         // now that it's sorted, just pop them into the compile queue in order
         for (var l : table) {
@@ -125,8 +135,9 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
             // check if an input module is lower than this module
             var m = s.getConnection().getOutputSocket().getModule();
             if (m.getCompileLayer() <= module.getCompileLayer()) {
-                // bump up the input module and it's input modules
+                // bump up the input module so that it's higher than this module
                 m.setCompileLayer(module.getCompileLayer()+1);
+                // now that the input module is moved, we have to bump it's input modules too
                 int i = bump(m, m.getCompileLayer() > max ? m.getCompileLayer() : max);
                 // save the maximum layer
                 if (i > max) {
@@ -134,6 +145,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 }
                 // If the modules are connected in a loop (illegal), then the max layer should should take off into space.
                 // Unfortunately, there is no good way to stop this before it happens.
+                // Infinite looping will result in a stack-overflow exception and crash the application.
             }
         }
         return max;
@@ -189,7 +201,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         compiledCode.add(line);
     }
     private boolean compileResources() {
-        System.out.println("compile resources");
         if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getResources().isEmpty()) {
             var res = currentModule.getGlsl().getResources().get(substep).getResource();
@@ -206,7 +217,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileGenerics() {
-        System.out.println("compile generics");
         if (moduleIterator == null) {
             moduleIterator = compileQueue.iterator();
         }
@@ -235,7 +245,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean verifyGenerics() {
-        System.out.println("verify generics");
         for (var m : compileQueue) {
             for (var s : m.getInputSockets()) {
                 if (s.getNumConnections() != 0 && !s.varTypeMatch(s.getConnection().getOutputSocket())) {
@@ -247,7 +256,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return true;
     }
     private boolean compileInitCode() {
-        System.out.println("compile init code");
         if (fetchNextModule()) return true;
         if (!currentModule.getGlsl().getInitCode().isEmpty()) {
             append(currentModule.getGlsl().compileInitLine(substep++));
@@ -259,7 +267,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileStaticCode() {
-        System.out.println("compile static code");
         if (staticIterator == null) {
             staticIterator = GLSL.getStaticGlsl().iterator();
         }
@@ -297,7 +304,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         return false;
     }
     private boolean compileMainCode() {
-        System.out.println("compile main code");
         if (fetchNextModule()) return true;
         if (substep < currentModule.getInputSockets().size()) {            
             // declare variables

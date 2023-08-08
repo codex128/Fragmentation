@@ -46,7 +46,7 @@ public class GlslVar {
         for (int i = 0; i < string.length(); i++) {
             char c = string.charAt(i);
             chunk.append(c);
-            boolean margin = !Character.isLetter(c) && !Character.isDigit(c);
+            boolean margin = !Character.isLetter(c) && !Character.isDigit(c) && c != '_';
             // if we've built a full variable, check if the current character is a margin,
             // if so, append the compiler name
             if (build && index == name.length()) {

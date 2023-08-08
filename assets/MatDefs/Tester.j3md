@@ -1,6 +1,6 @@
 MaterialDef Simple {
     MaterialParameters {
-        Color Vec4
+        Float Dissolve
     }
     Technique {
         VertexShader GLSL120:   MatDefs/tester.vert
