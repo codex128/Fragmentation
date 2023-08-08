@@ -126,6 +126,10 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         table.clear();
     }
     private int bump(Module module, int max) {
+        // Updates each input module's compile layer so that it is
+        // higher than this module's compile layer.
+        // This method is recursive, so calling this once should
+        // sort a whole tree of modules correctly.
         for (var s : module.getInputSockets()) {
             // generate a unique name for this variable
             if (s.getVariable().getCompilerName() == null) {
@@ -133,8 +137,8 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
             }
             // if this has no connections, there is no need to do further calculations
             if (s.getNumConnections() == 0) {
-                // parse the gui to the argument
-                if (!s.getArgument().compile(s.getVariable())) {
+                // parse the argument gui to the variable
+                if (s.getArgument() != null && !s.getArgument().compile(s.getVariable())) {
                     // the gui argument was found to be invalid
                     error = new CompilingError("Illegal Argument!");
                 }
@@ -144,12 +148,12 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
             if (s.getVariable().getCompileSource() == null) {
                 s.getVariable().setCompileSource(s.getConnection().getOutputSocket().getVariable());
             }
-            // check if an input module is lower than this module
+            // check if an input module not higher than this module
             var m = s.getConnection().getOutputSocket().getModule();
             if (m.getCompileLayer() <= module.getCompileLayer()) {
                 // bump up the input module so that it's higher than this module
                 m.setCompileLayer(module.getCompileLayer()+1);
-                // now that the input module is moved, we have to bump it's input modules too
+                // now that the input module is moved, we have to bump it's input modules, too
                 int i = bump(m, m.getCompileLayer() > max ? m.getCompileLayer() : max);
                 // save the maximum layer
                 if (i > max) {
@@ -157,7 +161,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
                 }
                 // If the modules are connected in a loop (illegal), then the max layer should should take off into space.
                 // Unfortunately, there is no good way to stop this before it happens.
-                // Infinite looping will result in a stack-overflow exception and crash the application.
+                // Interdependence will result in a stack-overflow exception and crash the application.
             }
         }
         return max;

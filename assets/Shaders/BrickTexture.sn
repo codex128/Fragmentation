@@ -2,10 +2,33 @@ $name Brick Texture
 
 @input vec2 vector 0.0,0.0
 @input float scale 5.0
+@input float offset 0.5
 @input vec2 size 1.0,0.5
-@input vec4 brick1 0.7,0.2,0.2,1.0
-@input vec4 brick2 0.8,0.3,0.3,1.0
-@input vec4 mortar 0.5,0.5,0.5,1.0
+@input float mortarWeight 0.05
+@input float transition 0.05
 
-@output vec4 color
+@static brick
+
 @output float factor
+
+<static>
+
+float brick(vec2 uv, float s, vec2 d, float off, float mw, float trans) {
+    uv *= s;
+    if (mod(int(floor(uv.y)), 2) < 1) {
+        //uv.x += d.x * off * s;
+    }
+    vec2 f = fract(uv);
+    float w1 = smoothstep(mw, mw + trans, f.x);
+    float w2 = 1 - smoothstep(1.0 - mw - trans, 1.0 - mw, f.x);
+    float w3 = smoothstep(mw, mw + trans, f.y);
+    float w4 = 1 - smoothstep(1.0 - mw - trans, 1.0 - mw, f.y);
+    return min(min(w1, w2), min(w3, w4));
+}
+
+</static>
+<main>
+
+float factor = brick(vector, scale, size, offset, mortarWeight, transition);
+
+</main>

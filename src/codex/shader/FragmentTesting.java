@@ -6,6 +6,8 @@ package codex.shader;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 
@@ -29,7 +31,10 @@ public class FragmentTesting extends SimpleApplication {
         var cube = new Geometry("test-cube", new Box(1f, 1f, 1f));
         mat = new Material(assetManager, "MatDefs/Tester.j3md");
         mat.setFloat("Dissolve", value);
+        mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+        mat.setTransparent(true);
         cube.setMaterial(mat);
+        cube.setQueueBucket(RenderQueue.Bucket.Transparent);
         rootNode.attachChild(cube);
         
     }
