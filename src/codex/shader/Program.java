@@ -76,8 +76,8 @@ public class Program extends GameAppState {
         initGui();     
         
         try {
-            //load(new File(FileBrowser.path(FileBrowser.HOME, "fragmentation.fnp")));
-            createFromAsset("Templates/testProgram.fnp");
+            load(new File(FileBrowser.path(FileBrowser.HOME, "fragmentation.fnp")));
+            //createFromAsset("Templates/testProgram.fnp");
         } catch (IOException ex) {
             Logger.getLogger(FileBrowser.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -255,8 +255,9 @@ public class Program extends GameAppState {
         var module = new Module(this, GLSL.fromLocator(assetManager, locator), id);
         module.setLocalTranslation(position);
         for (var def : defaults) {
-            def[0] = def[0].substring(5);
-            module.getGlsl().applyDefault(def);
+            // remove def- from the front, which should result in the exact variable name
+            def[0] = def[0].substring(4);
+            module.applyDefault(def);
         }
         if (addModule(module) && output == null && module.getGlsl().isOutput()) {
             if (!module.getOutputSockets().isEmpty()) {

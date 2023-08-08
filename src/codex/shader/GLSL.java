@@ -76,7 +76,6 @@ public class GLSL {
                 if (data.startsWith("<static>")) {
                     if (staticCode == null) {
                         staticCode = addStaticIfAbsent(new StaticGlsl(this));
-                        System.out.println("create static code: "+staticCode);
                     }
                     state = ParseState.Static;
                 }
