@@ -190,6 +190,11 @@ public class Program extends GameAppState {
                         +"position="+((int)m.getLocalTranslation().x)+","+((int)m.getLocalTranslation().y));
                 for (var s : m.getInputSockets()) {
                     if (s.getVariable().getDefault() == null) continue;
+                    var def = s.getVariable().getDefault();
+                    if (s.getArgument() != null && (def = s.getArgument().getDefaultValue()) == null) {
+                        def = s.getArgument().getFallbackValue();
+                        System.err.println("SEVERE: Variable "+s.getVariable().getName()+" of "+s.getModule().getGlsl().getName()+" was saved with an illegal argument");
+                    }
                     writer.write(";def-"+s.getVariable().getName()+"="+s.getVariable().getDefault());
                 }
                 if (m == output) {

@@ -49,11 +49,16 @@ public class StateArgument extends StringArgument {
         int i = 0;
         for (var v : states) {
             if (v.equals(value)) {
-                return String.valueOf(i);
+                System.out.println("get state: "+i);
+                return ""+i;
             }
             i++;
         }
-        throw new NullPointerException("An error occured while getting the default state value!");
+        return null;
+    }
+    @Override
+    public String getFallbackValue() {
+        return "0";
     }
     
     public static boolean isStateVar(GlslVar var) {

@@ -61,6 +61,10 @@ public class GenericArgument extends Argument {
     public String getDefaultValue() {
         return field.getText();
     }
+    @Override
+    public String getFallbackValue() {
+        return "float";
+    }
     
     private static boolean isGlslType(String type) {
         for (var t : GLSL_TYPES) {

@@ -34,5 +34,9 @@ public class StringArgument extends Argument {
     public String getDefaultValue() {
         return field.getText();
     }
+    @Override
+    public String getFallbackValue() {
+        return "fallback";
+    }
     
 }

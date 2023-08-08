@@ -34,5 +34,9 @@ public class FloatArgument extends Argument {
     public String getDefaultValue() {
         return field.getText();
     }
+    @Override
+    public String getFallbackValue() {
+        return "0.0";
+    }
     
 }

@@ -80,7 +80,6 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
             // generate names for variables that didn't recieve one during queueing (non-input variables)
             for (var v : m.getGlsl().getVariables()) {
                 if (v.getCompilerName() != null) continue;
-                //System.out.println("assign compiler name to "+v.getName()+" of "+m.getGlsl().getName());
                 v.setCompilerName(generateNextName());
             }
             // assign compile sources to static code
@@ -130,11 +129,17 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
         for (var s : module.getInputSockets()) {
             // generate a unique name for this variable
             if (s.getVariable().getCompilerName() == null) {
-                System.out.println("assign compiler name to "+s.getVariable().getName()+" of "+module.getGlsl().getName());
                 s.getVariable().setCompilerName(generateNextName());
             }
             // if this has no connections, there is no need to do further calculations
-            if (s.getNumConnections() == 0) continue;
+            if (s.getNumConnections() == 0) {
+                // parse the gui to the argument
+                if (!s.getArgument().compile(s.getVariable())) {
+                    // the gui argument was found to be invalid
+                    error = new CompilingError("Illegal Argument!");
+                }
+                continue;
+            }
             // set the compiler source variable
             if (s.getVariable().getCompileSource() == null) {
                 s.getVariable().setCompileSource(s.getConnection().getOutputSocket().getVariable());
