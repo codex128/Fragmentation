@@ -1,4 +1,4 @@
-$name Trigonometry.sn
+$name Trigonometry
 
 @input constant state function 0:Sine,Cosine,Tangent,Arc Sine,Arc Cosine,Radians,Degrees
 @input constant float value 1.0

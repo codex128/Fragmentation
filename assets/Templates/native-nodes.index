@@ -12,10 +12,14 @@ Mix.sn
 NoiseTexture.sn
 Random.sn
 Rectangle.sn
+Scale.sn
 SeperateXYZW.sn
 Step.sn
 Texture2D.sn
+Translate.sn
 Trigonometry.sn
 Uniform.sn
+UniformOpt.sn
+Value.sn
 Varying.sn
 WaveTexture.sn

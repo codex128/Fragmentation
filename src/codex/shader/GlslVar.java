@@ -188,7 +188,6 @@ public class GlslVar {
     }
     
     public static GlslVar parse(String source) throws SyntaxException {
-        System.out.println("parsing variable");
         String[] args = source.split(" ");
         String function, type = null, name = null, def = null;
         var modifiers = new ArrayList<String>();

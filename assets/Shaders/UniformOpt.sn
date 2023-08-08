@@ -1,0 +1,25 @@
+$name Uniform (opt.)
+
+@input String defined DIFFUSE
+@input generic type vec4
+@input String name m_Diffuse
+@input constant <type> default 0.0,0.0,1.0,1.0
+
+@output <type> value
+
+<init>
+
+#ifdef {defined}
+    uniform <type> {name};
+#endif
+
+</init>
+<main>
+
+#ifdef {defined}
+    <type> value = <type>({name});
+#else
+    <type> value = <type>(default);
+#endif
+
+</main>

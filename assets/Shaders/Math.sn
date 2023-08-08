@@ -17,12 +17,13 @@ float math(int f, float a, float b) {
     if (f == 3) return b == 0 ? 0 : a/b;
     if (f == 4) return abs(a);
     if (f == 5) return fract(a);
-    if (f == 6) return ceil(a);
-    if (f == 7) return mod(a, b);
-    if (f == 8) return pow(a, b);
-    if (f == 9) return sqrt(a);
-    if (f == 10) return max(a, b);
-    if (f == 11) return min(a, b);
+    if (f == 6) return floor(a);
+    if (f == 7) return ceil(a);
+    if (f == 8) return mod(a, b);
+    if (f == 9) return pow(a, b);
+    if (f == 10) return sqrt(a);
+    if (f == 11) return max(a, b);
+    if (f == 12) return min(a, b);
 }
 
 </static>

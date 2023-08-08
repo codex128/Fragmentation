@@ -1,0 +1,25 @@
+$name Rotate
+
+@input vec2 vector 0.0,0.0
+@input constant vec2 center 0.0,0.0
+@input constant float angle 0.0
+
+@static rotate
+
+@output vec2 result
+
+<static>
+
+vec2 rotate(vec2 uv, vec2 c, float a) {
+    uv -= c;
+    mat2 matrix = mat2(cos(a), -sin(a), sin(a), cos(a));
+    uv = matrix * uv;
+    uv += c;
+}
+
+</static>
+<main>
+
+vec2 result = rotate(vector, center, angle);
+
+</main>

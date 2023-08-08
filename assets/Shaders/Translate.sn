@@ -1,0 +1,13 @@
+$name Translate
+
+@input generic type vec2
+@input constant <type> vector
+@input constant <type> move
+
+@output <type> result
+
+<main>
+
+<type> result = vector + move;
+
+</main>

@@ -1,0 +1,10 @@
+$name Value
+
+@input constant float value
+@output float result
+
+<main>
+
+float result = float(value);
+
+</main>

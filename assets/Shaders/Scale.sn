@@ -1,0 +1,13 @@
+$name Scale
+
+@input generic type vec2
+@input constant <type> vector
+@input constant <type> scalar
+
+@output <type> result
+
+<main>
+
+<type> result = vector * scalar;
+
+</main>
