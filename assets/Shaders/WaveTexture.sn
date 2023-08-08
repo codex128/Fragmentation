@@ -3,7 +3,7 @@ $name Wave Texture
 @input vec2 texCoord 0.0,0.0
 @input float scale 5.0
 
-@local wave
+@static wave
 
 @output float factor
 

@@ -5,8 +5,8 @@ $name Checker Texture
 @input vec4 color2 1.0,1.0,1.0,1.0
 @input float scale 5.0
 
-@local checker
-@local isEven
+@static isEven
+@static checker
 
 @output vec4 color
 

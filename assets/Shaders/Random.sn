@@ -4,6 +4,8 @@ $name Random
 @input float min 0.0
 @input float max 1.0
 
+@static rand
+
 @output float result
 
 <static>

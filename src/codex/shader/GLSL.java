@@ -75,7 +75,10 @@ public class GLSL {
             case Def -> {
                 if (data.startsWith("<static>")) {
                     if (staticCode == null) {
-                        staticCode = addStaticIfAbsent(new StaticGlsl(this));
+                        staticCode = addStaticIfAbsent(new StaticGlsl(name));
+                        if (staticCode != null) {
+                            System.out.println("create static code: "+staticCode.getId());
+                        }
                     }
                     state = ParseState.Static;
                 }
@@ -115,7 +118,7 @@ public class GLSL {
                     }
                 }
                 else if (staticCode != null) {
-                    staticCode.append(this, line);
+                    staticCode.append(line);
                 }
             }
             case Init -> {
@@ -167,8 +170,22 @@ public class GLSL {
         return false;
     }
     public String compileLine(String line) {
+        // fetch delegate to use for static variables
+        var delegate = getStaticGlsl(name);
+        if (delegate != null && delegate.getCompileSource() == null) {
+            throw new NullPointerException("Static code compile source cannot be null!");
+        }
         for (var v : variables) {
-            line = v.compileUsages(line);
+            if (v.isStatic() && delegate != null && delegate.getCompileSource() != this) {
+                var s = delegate.getCompileSource().getVariableNamed(v.getName());
+                if (s == null) {
+                    throw new NullPointerException("Static delegate missing information!");
+                }
+                line = s.compileUsages(line);
+            }
+            else {
+                line = v.compileUsages(line);
+            }
         }
         return line;
     }
@@ -217,6 +234,9 @@ public class GLSL {
     }
     public Stream<GlslVar> getOutputVariables() {
         return variables.stream().filter(v -> v.isOutput());
+    }
+    public GlslVar getVariableNamed(String name) {
+        return variables.stream().filter(v -> v.getName().equals(name)).findAny().orElse(null);
     }
     @Override
     public String toString() {

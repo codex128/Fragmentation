@@ -5,6 +5,7 @@
 package codex.shader;
 
 import codex.shader.gui.Argument;
+import com.jme3.math.Vector3f;
 import com.simsilica.lemur.Label;
 import com.simsilica.lemur.style.ElementId;
 
@@ -41,7 +42,7 @@ public class InputSocket extends Socket {
         layout.addChild(0, 0, hub);
         layout.addChild(0, 1, new Label(variable.getName()));
         layout.addChild(0, 2, argument);
-    }    
+    }
     @Override
     public boolean acceptConnectionTo(Socket socket) {
         return super.acceptConnectionTo(socket) && connections.isEmpty();

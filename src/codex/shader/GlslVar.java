@@ -14,6 +14,7 @@ public class GlslVar {
     public static final String
             INPUT = FUNCTION+"input",
             LOCAL = FUNCTION+"local",
+            STATIC = FUNCTION+"static",
             OUTPUT = FUNCTION+"output";
     
     protected String function, name, type, def;
@@ -37,7 +38,7 @@ public class GlslVar {
     }
     public String compileUsages(String string) {
         if (compilerName == null) {
-            throw new NullPointerException("Cannot compile because compiler-assigned name is null!");
+            throw new NullPointerException("Cannot compile \""+name+"\" because compiler-assigned name is null!");
         }
         var compiled = new StringBuilder();
         var chunk = new StringBuilder();
@@ -120,11 +121,14 @@ public class GlslVar {
     public boolean isLocal() {
         return function.equals(LOCAL);
     }
+    public boolean isStatic() {
+        return function.equals(STATIC);
+    }
     public boolean isOutput() {
         return function.equals(OUTPUT);
     }
     public boolean isGeneric() {
-        return !isLocal() && type.startsWith("<") && type.endsWith(">");
+        return !isLocal() && !isStatic() && type.startsWith("<") && type.endsWith(">");
     }
     
     public static GlslVar parse(String source) throws SyntaxException {
@@ -141,6 +145,10 @@ public class GlslVar {
                 }
             }
             case LOCAL -> {
+                validate(args, 2);
+                name = args[1];
+            }
+            case STATIC -> {
                 validate(args, 2);
                 name = args[1];
             }
