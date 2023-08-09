@@ -1,0 +1,31 @@
+
+vec2 vec2math(int f, vec2 v1, vec2 v2) {
+    if (f == 0) return v1+v2;
+    if (f == 1) return v1-v2;
+    if (f == 2) return v1*v2;
+    if (f == 3) return v1/v2;
+    if (f == 4) return dot(v1, v2);
+    if (f == 5) return cross(v1, v2);
+    if (f == 6) return fract(v1);
+    if (f == 7) return floor(v1);
+}
+vec2 vec3math(int f, vec2 v1, vec2 v2) {
+    if (f == 0) return v1+v2;
+    if (f == 1) return v1-v2;
+    if (f == 2) return v1*v2;
+    if (f == 3) return v1/v2;
+    if (f == 4) return dot(v1, v2);
+    if (f == 5) return cross(v1, v2);
+    if (f == 6) return fract(v1);
+    if (f == 7) return floor(v1);
+}
+vec2 vec4math(int f, vec2 v1, vec2 v2) {
+    if (f == 0) return v1+v2;
+    if (f == 1) return v1-v2;
+    if (f == 2) return v1*v2;
+    if (f == 3) return v1/v2;
+    if (f == 4) return dot(v1, v2);
+    if (f == 5) return cross(v1, v2);
+    if (f == 6) return fract(v1);
+    if (f == 7) return floor(v1);
+}

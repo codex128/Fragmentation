@@ -1,6 +1,6 @@
 $name Value
 
-@input constant float value
+@input constant float value 1.0
 @output float result
 
 <main>

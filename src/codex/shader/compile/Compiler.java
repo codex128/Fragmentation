@@ -6,7 +6,6 @@ package codex.shader.compile;
 
 import codex.boost.Listenable;
 import codex.shader.GLSL;
-import codex.shader.GlslVar;
 import codex.shader.StaticGlsl;
 import codex.shader.Module;
 import codex.shader.Program;

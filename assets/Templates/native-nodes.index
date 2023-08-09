@@ -10,7 +10,9 @@ Extract.sn
 Grayscale.sn
 Math.sn
 Mix.sn
+Musgrave.sn
 NoiseTexture.sn
+Operation.sn
 PBRLighting.sn
 Random.sn
 Rectangle.sn

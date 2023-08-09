@@ -1,10 +1,10 @@
-$name Cobblestone Texture
+$name Musgrave Texture
 
 @input vec2 vector 0.0,0.0
 @input constant float scale 5.0
 @input constant float seed 1.5
 
-@static cobble
+@static musgrave
 
 @output float factor
 
@@ -12,7 +12,7 @@ $name Cobblestone Texture
 
 <static>
 
-float cobble(vec2 uv, float scale, float seed) {
+float musgrave(vec2 uv, float scale, float seed) {
     
     uv *= scale;
     
@@ -20,14 +20,14 @@ float cobble(vec2 uv, float scale, float seed) {
     // and f being the location relative to the cell (or cell space)
     vec2 i = floor(uv);
     vec2 f = fract(uv);
-    
+  
     float minDist1 = 100.0;
     float minDist2 = 100.0;
     
     // iterate through this cell and the 8 surrounding cells
     for (int y = -1; y <= 1; y++) {
         for (int x = -1; x <= 1; x++) {
-            // neighboring cell in the grid
+            // neighbor place in the grid
             vec2 neighbor = vec2(float(x), float(y));
             vec2 point = randomVec2(i + neighbor, seed);
             vec2 diff = neighbor + point - f;
@@ -41,14 +41,14 @@ float cobble(vec2 uv, float scale, float seed) {
             }
         }
     }
-    
-    return (1.0 - minDist1) + (1.0 - minDist2);
+
+    return minDist1 - minDist2 * 0.9;
     
 }
 
 </static>
 <main>
 
-float factor = cobble(vector, scale, seed);
+float factor = musgrave(vector, scale, seed);
 
 </main>

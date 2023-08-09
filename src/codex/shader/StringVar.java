@@ -39,11 +39,12 @@ public class StringVar extends GlslVar {
             }
             // dump chunk because it is invalid
             else {
-                compiled.append(c);
-                index = 0;
                 if (!chunk.isEmpty()) {
+                    compiled.append(chunk);
                     chunk.delete(0, chunk.length());
                 }
+                compiled.append(c);
+                index = 0;
             }
             // if we've built a full variable, insert the replacement string
             if (index == replace.length()) {

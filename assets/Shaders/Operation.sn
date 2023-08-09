@@ -1,0 +1,16 @@
+$name Operation
+
+@input String operate a+b
+@input generic type1 vec4
+@input <type1> a
+@input generic type2 vec4
+@input <type2> b
+@input generic type3 vec4
+
+@output <type3> result
+
+<main>
+
+<type3> result = <type3>({operate});
+
+</main>
