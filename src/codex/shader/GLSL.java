@@ -29,7 +29,7 @@ public class GLSL {
         Def, Static, Init, Main;
     }
     
-    public static final String NAME_ID = "$name", INCLUDE_ID = "#include", OUTPUT_ID = "$output";
+    public static final String NAME_ID = "$name", IMPORT_ID = "#import", OUTPUT_ID = "$output";
     public static final String NATIVE = "native", ADDON = "addon";
     private static final HashMap<String, StaticGlsl> statics = new HashMap<>();
     
@@ -94,8 +94,8 @@ public class GLSL {
                         name = null;
                     }
                 }
-                else if (data.startsWith(INCLUDE_ID+" ")) {
-                    var args = data.substring(INCLUDE_ID.length()+1).split(" ", 2);
+                else if (data.startsWith(IMPORT_ID+" ")) {
+                    var args = data.substring(IMPORT_ID.length()+1).split(" ", 2);
                     var res = new Resource(args[0]);
                     if (args.length > 1) {
                         res.setHyperlink(args[1]);
@@ -151,7 +151,7 @@ public class GLSL {
     
     public String compileResources(int index) {
         var res = resources.get(index);
-        return "#include \""+res.getResource()+"\"";
+        return "#import \""+res.getResource()+"\"";
     }
     public boolean compileGenerics(int index) {
         var v = variables.get(index);
