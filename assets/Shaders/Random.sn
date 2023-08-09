@@ -1,5 +1,6 @@
 $name Random
 
+@input constant float value 1.0
 @input constant float seed 34.9
 @input constant float min 0.0
 @input constant float max 1.0
@@ -8,15 +9,10 @@ $name Random
 
 @output float result
 
-<static>
+#import ShaderLib/random.glsllib
 
-float rand(float s) {
-    return fract(sin(s) * 13052.74161;
-}
-
-</static>
 <main>
 
-float result = rand(seed) * (max - min) + min;
+float result = random(value, seed) * (max - min) + min;
 
 </main>

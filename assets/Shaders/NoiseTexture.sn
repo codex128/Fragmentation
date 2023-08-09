@@ -3,24 +3,23 @@ $name Noise Texture
 @input vec2 vector 0.0,0.0
 @input constant float scale 5.0
 
-@static rand2D
 @static noise2D
 
 @output float value
 
+#import ShaderLib/random.glsllib
+
 <static>
 
-float rand2D(vec2 uv) {
-    return fract(sin(dot(uv.xy, vec2(14.3423, 76.8593))) * 41852.5463133);
-}
 float noise2D(vec2 uv, float s) {
     uv *= s;
     vec2 i = floor(uv);
     vec2 f = fract(uv);
-    float a = rand2D(i);
-    float b = rand2D(i + vec2(1.0, 0.0));
-    float c = rand2D(i + vec2(0.0, 1.0));
-    float d = rand2D(i + vec2(1.0, 1.0));
+    float seed = 34023.5329;
+    float a = randomVec2ToFloat(i, seed);
+    float b = randomVec2ToFloat(i + vec2(1.0, 0.0), seed);
+    float c = randomVec2ToFloat(i + vec2(0.0, 1.0), seed);
+    float d = randomVec2ToFloat(i + vec2(1.0, 1.0), seed);
     vec2 u = f*f*(3.0-2.0*f);
     return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
 }

@@ -332,10 +332,13 @@ public class Program extends GameAppState {
         }
     }
     private File fetchTargetFile() {
-        String parent;
-        if (file != null) parent = file.getParent();
-        else parent = FileBrowser.HOME;
-        return new File(FileBrowser.path(parent, "export.frag"));
+        // this code fetches the parent file to export to
+//        String parent;
+//        if (file != null) parent = file.getParent();
+//        else parent = FileBrowser.HOME;
+//        return new File(FileBrowser.path(parent, "export.frag"));
+        // this code saves to a convenient testing location
+        return new File(FileBrowser.path(FileBrowser.HOME, "java", "prj", "ShaderNodes", "assets", "MatDefs", "export.frag"));
     }
     
     private Container createPopup(Vector3f location, String title, String body) {

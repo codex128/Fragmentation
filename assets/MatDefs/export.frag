@@ -1,3 +1,4 @@
+#import "ShaderLib/random.glsllib"
 #import "Common/ShaderLib/GLSLCompat.glsllib"
 #import "Common/ShaderLib/PBR.glsllib"
 #import "Common/ShaderLib/Parallax.glsllib"
@@ -8,21 +9,7 @@ varying vec3 wPosition;
 varying vec3 wNormal;
 varying vec4 wTangent;
 varying vec2 texCoord;
-bool gv_B(int n) {
-    return mod(n, 2) < 1;
-}
-vec4 gv_C(vec2 uv, vec4 c1, vec4 c2, float s) {
-    uv *= s;
-    bool x = gv_B(int(floor(uv.x)));
-    bool y = gv_B(int(floor(uv.y)));
-    if (x == y) {
-        return c1;
-    }
-    else {
-        return c2;
-    }
-}
-vec4 gv_L(vec4 d, float m, float s, float r, vec4 n) {
+vec4 gv_y(vec4 d, float m, float s, float r, vec4 n) {
     vec3 viewDir = normalize(g_CameraPosition - wPosition);    
     vec4 output = vec4(0.0);
     vec4 albedo = vec4(d);
@@ -74,33 +61,40 @@ vec4 gv_L(vec4 d, float m, float s, float r, vec4 n) {
     output.a = alpha;
     return output;
 }
-float gv_I(int f, float a, float b) {
-    if (f == 0) return a+b;
-    if (f == 1) return a-b;
-    if (f == 2) return a*b;
-    if (f == 3) return b == 0 ? 0 : a/b;
-    if (f == 4) return abs(a);
-    if (f == 5) return fract(a);
-    if (f == 6) return floor(a);
-    if (f == 7) return ceil(a);
-    if (f == 8) return mod(a, b);
-    if (f == 9) return pow(a, b);
-    if (f == 10) return sqrt(a);
-    if (f == 11) return max(a, b);
-    if (f == 12) return min(a, b);
+float gv_v(int f, float a, float b) {
+    if (f == 0) return a > b ? 1.0 : 0.0;
+    if (f == 1) return a < b ? 1.0 : 0.0;
+    if (f == 2) return a == b ? 1.0 : 0.0;
+}
+float gv_t(vec2 uv, float scale, float seed) {
+    uv *= scale;
+    vec2 i = floor(uv);
+    vec2 f = fract(uv);
+    float minDist1 = 100.0;
+    float minDist2 = 100.0;
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 point = randomVec2(i + neighbor, seed);
+            vec2 diff = neighbor + point - f;
+            float dist = length(diff);
+            if (dist < minDist1) {
+                minDist2 = minDist1;
+                minDist1 = dist;
+            }
+            else if (dist < minDist2) {
+                minDist2 = dist;
+            }
+        }
+    }
+    return 1.0 - (1.0 - minDist1) + (1.0 - minDist2);
 }
 void main() {
-    vec4 gv_y = vec4(0.0, 1.0, 0.0, 0.0);
-    vec4 gv_z = vec4(gv_y.rgb, 1.0);
-    vec2 gv_A = vec2(texCoord);
-    vec2 gv_d = vec2(gv_A);
-    vec4 gv_D = gv_C(gv_d, gv_z, gv_y, 7.0).rgba;
-    float gv_E = gv_D.x;
-    float gv_F = gv_D.y;
-    float gv_G = gv_D.z;
-    float gv_H = gv_D.w;
-    float gv_J = gv_I(1, 1.0, gv_H);
-    vec4 gv_K = vec4(gv_D.rgb, 1.0);
-    vec4 gv_M = gv_L(gv_K, gv_H, gv_H, gv_J, vec4(0.0,0.0,0.0,0.0));
-    gl_FragColor = gv_M;
+    vec2 gv_s = vec2(texCoord);
+    vec2 gv_f = vec2(gv_s);
+    float gv_u = gv_t(gv_f, 5.0, 1.5);
+    float gv_w = gv_v(1, gv_u, 0.9);
+    vec4 gv_x = vec4(gv_w, gv_w, gv_w, 1.0);
+    vec4 gv_z = gv_y(gv_x, 0.5, 0.5, 0.5, vec4(0.0,0.0,0.0,0.0));
+    gl_FragColor = gv_z;
 }
