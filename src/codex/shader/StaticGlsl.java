@@ -33,7 +33,7 @@ public class StaticGlsl {
     public String compileLine(int index, GLSL source) {
         var line = code.get(index);
         for (var v : source.getVariables()) {
-            if (!v.isLocal() && !v.isStatic()) continue;
+            if (!v.isStatic()) continue;
             line = v.renderUsages(line);
         }
         return line;

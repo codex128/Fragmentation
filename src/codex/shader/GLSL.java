@@ -40,6 +40,7 @@ public class GLSL {
     private final ArrayList<String> init = new ArrayList<>();
     private final ArrayList<String> main = new ArrayList<>();
     private final ArrayList<GlslVar> variables = new ArrayList<>();
+    private final ArrayList<GlslVar> globals = new ArrayList<>();
     private StaticGlsl staticCode;
     private ParseState state;
     
@@ -86,7 +87,9 @@ public class GLSL {
                     state = ParseState.Main;
                 }
                 else if (data.startsWith(GlslVar.FUNCTION)) {
-                    variables.add(GlslVar.parse(data));
+                    var v = GlslVar.parse(data);
+                    if (v.isGlobal()) globals.add(v);
+                    else variables.add(v);
                 }
                 else if (data.startsWith(NAME_ID+" ")) {
                     name = data.substring(NAME_ID.length()+1);
@@ -217,10 +220,13 @@ public class GLSL {
     public ArrayList<String> getMainCode() {
         return main;
     }
-    public Collection<GlslVar> getVariables() {
+    public ArrayList<GlslVar> getVariables() {
         return variables;
     }
-    public Stream<GlslVar> getGlobalVariables() {
+    public ArrayList<GlslVar> getGlobalVariables() {
+        return globals;
+    }
+    public Stream<GlslVar> getIOVariables() {
         return variables.stream().filter(v -> !v.isLocal());
     }
     public Stream<GlslVar> getLocalVariables() {

@@ -17,7 +17,8 @@ public class GlslVar {
             INPUT = FUNCTION+"input",
             LOCAL = FUNCTION+"local",
             STATIC = FUNCTION+"static",
-            OUTPUT = FUNCTION+"output";
+            OUTPUT = FUNCTION+"output",
+            GLOBAL = FUNCTION+"global";
     
     public static class Modifiers {
         
@@ -78,6 +79,7 @@ public class GlslVar {
             char c = string.charAt(i);
             chunk.append(c);
             boolean margin = !Character.isLetter(c) && !Character.isDigit(c) && c != '_';
+            boolean dotNotation = c == '.';
             // if we've built a full variable, check if the current character is a margin,
             // if so, append the render name
             if (build && index == name.length()) {
@@ -103,7 +105,7 @@ public class GlslVar {
             }
             // if not actively building, check if we can build
             if (chunk.isEmpty()) {
-                build = margin;
+                build = margin && !dotNotation;
             }
         }
         return compiled.toString();
@@ -177,6 +179,9 @@ public class GlslVar {
     public boolean isOutput() {
         return function.equals(OUTPUT);
     }
+    public boolean isGlobal() {
+        return function.equals(GLOBAL);
+    }
     public boolean isGeneric() {
         return !isLocal() && !isStatic() && type.startsWith("<") && type.endsWith(">");
     }
@@ -221,6 +226,10 @@ public class GlslVar {
                 validate(args, 3);
                 type = args[1];
                 name = args[2];
+            }
+            case GLOBAL -> {
+                validate(args, 2);
+                name = source.substring(GLOBAL.length()+1);
             }
             default -> throw new SyntaxException("Unknown identifier \""+function+"\"!");
         }

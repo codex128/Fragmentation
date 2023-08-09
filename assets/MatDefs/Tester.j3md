@@ -3,10 +3,16 @@ MaterialDef Simple {
         Float Dissolve
     }
     Technique {
-        VertexShader GLSL120:   MatDefs/tester.vert
-        FragmentShader GLSL120: MatDefs/export.frag
+        LightMode SinglePassAndImageBased
+        VertexShader GLSL300 GLSL150 GLSL120:   MatDefs/tester.vert
+        FragmentShader GLSL300 GLSL150 GLSL120: MatDefs/export.frag
         WorldParameters {
             WorldViewProjectionMatrix
+            CameraPosition
+            WorldMatrix
+            WorldNormalMatrix
+            ViewProjectionMatrix
+            ViewMatrix
         }
     }
 }

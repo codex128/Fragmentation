@@ -6,6 +6,7 @@ package codex.shader.compile;
 
 import codex.boost.Listenable;
 import codex.shader.GLSL;
+import codex.shader.GlslVar;
 import codex.shader.StaticGlsl;
 import codex.shader.Module;
 import codex.shader.Program;
@@ -25,13 +26,14 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     private static final String PREFIX = "gv_";
     private static final String[] letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     private static final String TAB = "    ";    
-    private final static String[] STEPS = {"resources", "generics", "verify-generics", "inits", "statics", "main"};
+    private final static String[] STEPS = {"resources", "globals", "generics", "verify-generics", "inits", "statics", "main"};
     
     private final Program program;
     private final ConcurrentLinkedQueue<CompileListener> listeners = new ConcurrentLinkedQueue<>();
     private final LinkedList<Module> compileQueue = new LinkedList<>();
     private final ArrayList<String> compiledCode = new ArrayList<>();
     private final HashSet<String> resources = new HashSet<>();
+    private final HashSet<String> globalVars = new HashSet<>();
     private Iterator<Module> moduleIterator;
     private Iterator<StaticGlsl> staticIterator;
     private Module currentModule;
@@ -204,6 +206,7 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
     private boolean runCompileStep(int step) {
         return switch (STEPS[step]) {
             case "resources"        -> compileResources();
+            case "globals"          -> compileGlobals();
             case "generics"         -> compileGenerics();
             case "verify-generics"  -> verifyGenerics();
             case "inits"            -> compileInitCode();
@@ -227,6 +230,21 @@ public class Compiler implements Runnable, Listenable<CompileListener> {
             substep++;
         }
         if (substep >= currentModule.getGlsl().getResources().size()) {
+            currentModule = null;
+            substep = 0;
+        }
+        return false;
+    }
+    private boolean compileGlobals() {
+        if (fetchNextModule()) return true;
+        if (!currentModule.getGlsl().getGlobalVariables().isEmpty()) {
+            var g = currentModule.getGlsl().getGlobalVariables().get(substep++);
+            if (!globalVars.contains(g.getName())) {
+                globalVars.add(g.getName());
+                append(g.getName()+";");
+            }
+        }
+        if (substep >= currentModule.getGlsl().getGlobalVariables().size()) {
             currentModule = null;
             substep = 0;
         }

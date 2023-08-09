@@ -10,6 +10,7 @@ Grayscale.sn
 Math.sn
 Mix.sn
 NoiseTexture.sn
+PBRLighting.sn
 Random.sn
 Rectangle.sn
 Scale.sn
